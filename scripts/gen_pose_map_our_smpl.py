@@ -113,8 +113,8 @@ def save_npz(data_path, res=128):
 
 
 if __name__ == '__main__':
-    smpl_parm_path = 'path to you data folder'
-    parms_name = 'smpl_parms.pth'
+    smpl_parm_path = '/home/enjhih/Tun-Chuan/GaussianAvatar/tunchuan_dataset/new_video_v1/train'
+    parms_name = 'smpl_parms_pred.pth'
     uv_template_fn = '../assets/template_mesh_smpl_uv.obj' # smplx/smpl
 
     print('saving obj...')

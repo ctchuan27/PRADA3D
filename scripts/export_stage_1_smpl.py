@@ -2,8 +2,8 @@ import torch
 import os
 from os.path import join
 
-net_save_path = ''
-smpl_parms_path = ''
+net_save_path = '/home/enjhih/Tun-Chuan/GaussianAvatar/output/new_video_v2_stage1/net/iteration_200'
+smpl_parms_path = '/home/enjhih/Tun-Chuan/GaussianAvatar/tunchuan_dataset/new_video_v1/train'
 net_name = 'net.pth'
 
 

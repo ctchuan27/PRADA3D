@@ -1,6 +1,6 @@
 import sys
 sys.path.append('../')
-from submodules  import smplx
+from submodules import smplx
 import pyrender
 import torch
 from os.path import join
@@ -11,11 +11,11 @@ import cv2
 import os
 from pyrender.constants import RenderFlags
 
-smpl_model = smplx.SMPL(model_path='./assets/smpl_files/smpl', gender='neutral', batch_size=1)
-width = 1024
-height = 1024
-data_path = '' 
-outpath = ''
+smpl_model = smplx.SMPL(model_path='../assets/smpl_files/smpl', gender='neutral', batch_size=1)
+width = 720
+height = 1280
+data_path = '/home/enjhih/Tun-Chuan/GaussianAvatar/tunchuan_dataset/new_video_v1/train' 
+outpath = '/home/enjhih/Tun-Chuan/GaussianAvatar/tunchuan_dataset/new_video_v1/train'
 beta_smpl_path = join(data_path, 'smpl_parms.pth')
 beta_smpl_data = torch.load(beta_smpl_path)
 smplx_parms_path = join(data_path, 'smpl_parms_pred.pth')

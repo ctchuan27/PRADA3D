@@ -6,7 +6,7 @@ import numpy as np
 import torch.nn as nn
 from submodules import smplx
 import trimesh
-from scene.dataset_mono import MonoDataset_train, MonoDataset_test, MonoDataset_novel_pose, MonoDataset_novel_view
+from scene.dataset_mono import MonoDataset_train, MonoDataset_test, MonoDataset_novel_pose, MonoDataset_novel_view, MonoDataset_novel_pose_VIBE, ROMP_novel_pose_webcam
 from utils.general_utils import worker_init_fn
 from utils.system_utils import mkdir_p
 from model.network import POP_no_unet
@@ -27,7 +27,7 @@ class AvatarModel:
         self.train = train
         self.train_mode = model_parms.train_mode
         self.gender = self.model_parms.smpl_gender
-
+        
         if train:
             self.batch_size = self.model_parms.batch_size
         else:
@@ -54,6 +54,7 @@ class AvatarModel:
             joint_num = 55
         
         else:
+
             self.smpl_model = smplx.SMPL(model_path=self.model_parms.smpl_model_path, gender = self.gender, batch_size = self.batch_size).cuda().eval()
             flist_uv, valid_idx, uv_coord_map = load_masks(model_parms.project_path, self.model_parms.query_posmap_size, body_model='smpl')
 
@@ -73,7 +74,8 @@ class AvatarModel:
         
         ## query_map store the sampled points from the cannonical smpl mesh, shape as [512. 512, 3] 
         query_map = torch.from_numpy(np.load(query_map_path)['posmap' + str(self.model_parms.query_posmap_size)]).reshape(-1,3)
-        query_points = query_map[valid_idx, :].cuda().contiguous()
+        query_points = query_map[valid_idx.cpu(), :].cuda().contiguous()
+        
         self.query_points = query_points[None].expand(self.batch_size, -1, -1)
         
         # we fix the opacity and rots of 3d gs as described in paper 
@@ -84,7 +86,7 @@ class AvatarModel:
         
         # we save the skinning weights from the cannonical mesh
         query_lbs = torch.from_numpy(np.load(query_lbs_path)).reshape(self.model_parms.query_posmap_size*self.model_parms.query_posmap_size, joint_num)
-        self.query_lbs = query_lbs[valid_idx, :][None].expand(self.batch_size, -1, -1).cuda().contiguous()
+        self.query_lbs = query_lbs[valid_idx.cpu(), :][None].expand(self.batch_size, -1, -1).cuda().contiguous()
         
         self.inv_mats = torch.linalg.inv(torch.load(mat_path)).expand(self.batch_size, -1, -1, -1).cuda()
         print('inv_mat shape: ', self.inv_mats.shape)
@@ -189,10 +191,17 @@ class AvatarModel:
 
         net_save_path = os.path.join(self.model_path, "net/iteration_{}".format(iteration))
 
-        saved_model_state = torch.load(
-            os.path.join(net_save_path, "net.pth"))
-        print('load pth: ', os.path.join(net_save_path, "net.pth"))
-        self.net.load_state_dict(saved_model_state["net"], strict=False)
+        if self.model_parms.train_stage  ==1:
+            saved_model_state = torch.load(
+                os.path.join(net_save_path, "net.pth"))
+            print('load pth: ', os.path.join(net_save_path, "net.pth"))
+            self.net.load_state_dict(saved_model_state["net"], strict=False)
+        
+        if self.model_parms.train_stage  ==2:
+            saved_model_state = torch.load(
+                os.path.join(net_save_path, "pose_encoder.pth"))
+            print('load pth: ', os.path.join(net_save_path, "pose_encoder.pth"))
+            self.net.load_state_dict(saved_model_state["net"], strict=False)
 
         if self.model_parms.train_stage  ==1:
             if not test:
@@ -200,6 +209,14 @@ class AvatarModel:
                 self.transl.load_state_dict(saved_model_state["transl"], strict=False)
             # if self.train_mode == 0:
             self.geo_feature.data[...] = saved_model_state["geo_feature"].data[...]
+
+        if self.model_parms.train_stage  ==2:
+            if not test:
+                self.pose.load_state_dict(saved_model_state["pose"], strict=False)
+                self.transl.load_state_dict(saved_model_state["transl"], strict=False)
+            # if self.train_mode == 0:
+            self.geo_feature.data[...] = saved_model_state["geo_feature"].data[...]
+            self.pose_encoder.load_state_dict(saved_model_state["pose_encoder"], strict=False)
 
         if self.optimizer is not None:
             self.optimizer.load_state_dict(saved_model_state["optimizer"])
@@ -249,6 +266,14 @@ class AvatarModel:
     
     def getNovelposeDataset(self,):
         self.novel_pose_dataset = MonoDataset_novel_pose(self.model_parms)
+        return self.novel_pose_dataset
+        
+    def getVIBEposeDataset(self,):
+        self.novel_pose_dataset = MonoDataset_novel_pose_VIBE(self.model_parms)
+        return self.novel_pose_dataset
+    
+    def getROMPposeDataset(self, novel_pose, camera_parameters, height, width):
+        self.novel_pose_dataset = ROMP_novel_pose_webcam(self.model_parms, novel_pose, camera_parameters,  height, width)
         return self.novel_pose_dataset
 
     def getNovelviewDataset(self,):
@@ -364,7 +389,7 @@ class AvatarModel:
                 )
             )
 
-        return torch.stack(rendered_images, dim=0), full_pred, offset_loss, geo_loss, scale_loss
+        return torch.stack(rendered_images, dim=0), full_pred, offset_loss, geo_loss, scale_loss, colors
 
     def train_stage2(self, batch_data, iteration):
         
@@ -460,7 +485,7 @@ class AvatarModel:
                 )
             )
 
-        return torch.stack(rendered_images, dim=0), full_pred, pose_loss, offset_loss,
+        return torch.stack(rendered_images, dim=0), full_pred, pose_loss, offset_loss, colors
         
 
 
