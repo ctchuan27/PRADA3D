@@ -67,7 +67,7 @@ def train(model, net, opt, saving_epochs, checkpoint_epochs):
             gt_image = batch_data['original_image']
 
             if model.train_stage ==1:
-                image, points, offset_loss, geo_loss, scale_loss = avatarmodel.train_stage1(batch_data, first_iter)
+                image, points, offset_loss, geo_loss, scale_loss, colors = avatarmodel.train_stage1(batch_data, first_iter)
                 scale_loss = opt.lambda_scale  * scale_loss
                 offset_loss = wdecay_rgl * offset_loss
                 
@@ -76,7 +76,7 @@ def train(model, net, opt, saving_epochs, checkpoint_epochs):
 
                 loss = scale_loss + offset_loss + Ll1 + ssim_loss + geo_loss
             else:
-                image, points, pose_loss, offset_loss, = avatarmodel.train_stage2(batch_data, first_iter)
+                image, points, pose_loss, offset_loss, colors = avatarmodel.train_stage2(batch_data, first_iter)
 
                 offset_loss = wdecay_rgl * offset_loss
                 
@@ -105,13 +105,16 @@ def train(model, net, opt, saving_epochs, checkpoint_epochs):
 
                 if (first_iter-1) % opt.log_iter == 0:
                     save_poitns = points.clone().detach().cpu().numpy()
+                    save_colors = colors.clone().detach().cpu().numpy()
                     for i in range(save_poitns.shape[0]):
                         pcd = o3d.geometry.PointCloud()
                         pcd.points = o3d.utility.Vector3dVector(save_poitns[i])
-                        o3d.io.write_point_cloud(os.path.join(model.model_path, 'log',"pred_%d.ply" % i) , pcd)
+                        pcd.colors = o3d.utility.Vector3dVector(save_colors)
+
+                        o3d.io.write_point_cloud(os.path.join(model.model_path, 'log',f"pred_{int(first_iter)}_{int(i)}.ply") , pcd)
 
                     torchvision.utils.save_image(image, os.path.join(model.model_path, 'log', '{0:05d}_pred'.format(first_iter) + ".png"))
-                    torchvision.utils.save_image(gt_image, os.path.join(model.model_path, 'log', '{0:05d}_gt'.format(first_iter) + ".png"))
+                    #torchvision.utils.save_image(gt_image, os.path.join(model.model_path, 'log', '{0:05d}_gt'.format(first_iter) + ".png"))
                     
             if tb_writer:
                 tb_writer.add_scalar('train_loss_patches/l1_loss', Ll1.item(), first_iter)
@@ -130,6 +133,10 @@ def train(model, net, opt, saving_epochs, checkpoint_epochs):
         if (epoch > saving_epochs[0]) and epoch % model.save_epoch == 0:
             print("\n[Epoch {}] Saving Model".format(epoch))
             avatarmodel.save(epoch)
+        if epoch == 200:
+            print("\n[Epoch {}] Saving Model".format(epoch))
+            avatarmodel.save(epoch)
+
 
 
 def prepare_output_and_logger(args):    
