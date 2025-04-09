@@ -61,7 +61,9 @@ class ModelParams(ParamGroup):
         # smpl and smplx model path
         self.smpl_model_path = os.getcwd() + '/assets/smpl_files/smpl'
         self.smplx_model_path = os.getcwd() + '/assets/smpl_files/smplx'
-        self.test_folder = os.getcwd() + '/assets/test_pose'
+        self.test_folder = os.getcwd() + '/assets/test_pose_v2'
+        
+        
 
         # two stage training, stage one for pose optimization and stage two for adding dynamic appearances
         self.stage1_out_path =  ''
@@ -77,6 +79,7 @@ class ModelParams(ParamGroup):
         self.train_mode = 0  #  [0, 1,] pop our
         self.cam_static = 1
         self._white_background = True
+        #self._white_background = False
         ##########for mode 0##################################
 
         # for_test
@@ -85,7 +88,8 @@ class ModelParams(ParamGroup):
 
         # input uv size and query uv size, 
         self.query_posmap_size= 512
-        self.inp_posmap_size= 128
+        #self.inp_posmap_size= 128
+        self.inp_posmap_size= 256
 
         super().__init__(parser, "Loading Parameters", sentinel)
 
@@ -115,7 +119,7 @@ class NetworkParams(ParamGroup):
 
 class OptimizationParams(ParamGroup):
     def __init__(self, parser):
-        self.epochs = 200     # total epochs for training 
+        self.epochs = 300     # total epochs for training 
         self.position_lr_init = 0.00016
         self.position_lr_final = 0.0000016
         self.position_lr_delay_mult = 0.01
@@ -134,7 +138,7 @@ class OptimizationParams(ParamGroup):
         self.lambda_pose = 10
         self.lambda_rgl = 1e1
         self.log_iter = 2000
-        self.lpips_start_iter = 30
+        self.lpips_start_iter = 40
         self.pose_op_start_iter = 1800  #define when to start pose optimization, >epochs means no optimization
         self.lr_net = 3e-3
         self.lr_geomfeat = 5e-4

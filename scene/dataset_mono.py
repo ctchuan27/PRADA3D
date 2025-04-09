@@ -649,6 +649,7 @@ class ROMP_novel_pose_webcam(Dataset):
         self.dataset_parms = dataset_parms
         ####change folder#####
         #self.data_folder = os.getcwd() + '/VIBE/output/sample_video'
+        #self.background = background
         self.device = device
         self.gender = self.dataset_parms.smpl_gender
 

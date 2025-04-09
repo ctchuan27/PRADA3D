@@ -32,11 +32,12 @@ class POP_no_unet(nn.Module):
             self.geom_proc_layers = geom_proc_layers[geom_layer_type]
     
         # shared shape decoder across different outfit types
-        self.decoder = ShapeDecoder(in_size=uv_feat_dim + c_geom,
+        self.decoder = ShapeDecoder(#in_size=uv_feat_dim + c_geom + 30,
+                                    in_size=uv_feat_dim + c_geom,
                                     hsize=hsize, actv_fn='softplus')
 
             
-    def forward(self, pose_featmap, geom_featmap, uv_loc):
+    def forward(self, pose_featmap, geom_featmap, uv_loc, sapiens_feature=None):
         '''
         :param x: input posmap, [batch, 3, 256, 256]
         :param geom_featmap: a [B, C, H, W] tensor, spatially pixel-aligned with the pose features extracted by the UNet
@@ -57,14 +58,23 @@ class POP_no_unet(nn.Module):
         else:
             pix_feature = pose_featmap + geom_featmap
 
-        
+        #pix_feature = torch.cat([pix_feature, sapiens_feature], 1)
         feat_res = geom_featmap.shape[2] # spatial resolution of the input pose and geometric features
         uv_res = int(uv_loc.shape[1]**0.5) # spatial resolution of the query uv map
 
+        #print("feat_res", feat_res)
+        #print("uv_res", uv_res)
+        
         # spatially bilinearly upsample the features to match the query resolution
         if feat_res != uv_res:
             query_grid = uv_to_grid(uv_loc, uv_res)
             pix_feature = F.grid_sample(pix_feature, query_grid, mode='bilinear', align_corners=False)#, align_corners=True)
+
+        if sapiens_feature is not None:
+            query_grid = uv_to_grid(uv_loc, uv_res)
+            sapiens_feature = F.grid_sample(sapiens_feature, query_grid, mode='bilinear', align_corners=False)#, align_corners=True)
+            #print("sapiens_feature", sapiens_feature.shape)
+            pix_feature = pix_feature + sapiens_feature
 
         B, C, H, W = pix_feature.shape
         N_subsample = 1 # inherit the SCALE code custom, but now only sample one point per pixel
@@ -77,8 +87,9 @@ class POP_no_unet(nn.Module):
         pix_feature = pix_feature.reshape(B, C, -1)
 
         uv_loc = uv_loc.reshape(B, -1, uv_feat_dim).transpose(1, 2)  # [B, N_pix, N_subsample, 2] --> [B, 2, Num of all pq subpixels]
-
+        #print("dimension:", torch.cat([pix_feature, uv_loc],1).shape)
         residuals, scales, shs = self.decoder(torch.cat([pix_feature, uv_loc], 1))  # [B, 3, N all subpixels]
+        
 
         return residuals, scales, shs 
 

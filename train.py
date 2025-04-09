@@ -172,7 +172,7 @@ if __name__ == "__main__":
     np = NetworkParams(parser)
     parser.add_argument('--debug_from', type=int, default=-1)
     parser.add_argument('--detect_anomaly', action='store_true', default=False)
-    parser.add_argument("--save_epochs", nargs="+", type=int, default=[100])
+    parser.add_argument("--save_epochs", nargs="+", type=int, default=[10])
     parser.add_argument("--quiet", action="store_true")
     parser.add_argument("--checkpoint_epochs", nargs="+", type=int, default=[])
     parser.add_argument("--start_checkpoint", type=str, default = None)

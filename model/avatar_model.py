@@ -11,13 +11,13 @@ from utils.general_utils import worker_init_fn
 from utils.system_utils import mkdir_p
 from model.network import POP_no_unet
 from utils.general_utils import load_masks
-from gaussian_renderer import render_batch
+from gaussian_renderer import render_batch, render_batch_custom_background
 from os.path import join
 import torch.nn as nn
 from model.modules  import UnetNoCond5DS
 
 class AvatarModel:
-    def __init__(self, model_parms, net_parms, opt_parms, load_iteration=None, train=True):
+    def __init__(self, model_parms, net_parms, opt_parms, load_iteration=None, train=True, background=None):
 
         self.model_parms = model_parms
         self.net_parms = net_parms
@@ -54,7 +54,7 @@ class AvatarModel:
             joint_num = 55
         
         else:
-
+            #print("self.model_parms.inp_posmap_size: ", self.model_parms.inp_posmap_size)
             self.smpl_model = smplx.SMPL(model_path=self.model_parms.smpl_model_path, gender = self.gender, batch_size = self.batch_size).cuda().eval()
             flist_uv, valid_idx, uv_coord_map = load_masks(model_parms.project_path, self.model_parms.query_posmap_size, body_model='smpl')
 
@@ -73,6 +73,7 @@ class AvatarModel:
             self.fix_inp_map = fix_inp_map[None].expand(self.batch_size, -1, -1, -1)
         
         ## query_map store the sampled points from the cannonical smpl mesh, shape as [512. 512, 3] 
+        #print('query_map_path: ', query_map_path)
         query_map = torch.from_numpy(np.load(query_map_path)['posmap' + str(self.model_parms.query_posmap_size)]).reshape(-1,3)
         query_points = query_map[valid_idx.cpu(), :].cuda().contiguous()
         
@@ -114,8 +115,12 @@ class AvatarModel:
         
         self.optimizer_pose = torch.optim.SparseAdam(param, 5.0e-3)
         
-        bg_color = [1, 1, 1] if model_parms.white_background else [0, 0, 0]
-        self.background = torch.tensor(bg_color, dtype=torch.float32, device="cuda")
+        if background is not None:
+            self.background = torch.tensor(background, dtype=torch.float32, device="cuda")
+        else:
+            bg_color = [1, 1, 1] if model_parms.white_background else [0, 0, 0]
+            #bg_color = [0, 0, 0]
+            self.background = torch.tensor(bg_color, dtype=torch.float32, device="cuda")
 
         self.rotation_activation = torch.nn.functional.normalize
         self.sigmoid_activation =  nn.Sigmoid()
@@ -127,16 +132,33 @@ class AvatarModel:
 
         self.net = POP_no_unet(
             c_geom=self.net_parms.c_geom, # channels of the geometric features
+            #c_geom=30,
             geom_layer_type=self.net_parms.geom_layer_type, # the type of architecture used for smoothing the geometric feature tensor
             nf=self.net_parms.nf, # num filters for the unet
+            #nf=30,
             hsize=self.net_parms.hsize, # hidden layer size of the ShapeDecoder MLP
             up_mode=self.net_parms.up_mode,# upconv or upsample for the upsampling layers in the pose feature UNet
             use_dropout=bool(self.net_parms.use_dropout), # whether use dropout in the pose feature UNet
             uv_feat_dim=2, # input dimension of the uv coordinates
         ).cuda()
-            
+        #print("self.model_parms.inp_posmap_size: ", self.model_parms.inp_posmap_size)
+        sapiens_feat_path = os.listdir(join(self.model_parms.source_path, "train/sapiens_2b"))
+        sapiens_feature = np.zeros((1920, 64, 64))
+        
+        for f in sapiens_feat_path:
+            sapiens_feature = sapiens_feature + np.load(join(self.model_parms.source_path, "train/sapiens_2b",f))
+        sapiens_feature = sapiens_feature / len(sapiens_feat_path)
+        sapiens_feature = sapiens_feature / max(sapiens_feature.max(), abs(sapiens_feature.min())) #*0.010
+        sapiens_feature = torch.tensor(sapiens_feature).float().cuda()
+        self.sapiens_feature = sapiens_feature.reshape(1, 64, 384, 320)
+        #feature = torch.clamp(feature, -0.55, 0.55)
+        #print("feature max min: ", feature.max(),feature.min())
         geo_feature = torch.ones(1, self.net_parms.c_geom, self.model_parms.inp_posmap_size, self.model_parms.inp_posmap_size).normal_(mean=0., std=0.01).float().cuda()
         self.geo_feature = nn.Parameter(geo_feature.requires_grad_(True))
+        #self.geo_feature = nn.Parameter(self.sapiens_feature.requires_grad_(True))
+        print("geo_feature shape: ", self.geo_feature.shape)
+        print("geo_feature max min: ", self.geo_feature.max(),self.geo_feature.min())
+
         
         if self.model_parms.train_stage == 2:
             self.pose_encoder = UnetNoCond5DS(
@@ -319,14 +341,23 @@ class AvatarModel:
                                 body_pose=pose_batch[:, 3:])
         
         cano2live_jnt_mats = torch.matmul(live_smpl.A, self.inv_mats)
+        
+        #print("self.geo_feature shape: ", self.geo_feature.shape)
+        #print("self.geo_feature: ", self.geo_feature)
+        #print("self.uv_coord_map shape: ", self.uv_coord_map.shape)
+
 
         geom_featmap = self.geo_feature.expand(self.batch_size, -1, -1, -1).contiguous()
         uv_coord_map = self.uv_coord_map.expand(self.batch_size, -1, -1).contiguous()
+        sapiens_feature = self.sapiens_feature.expand(self.batch_size, -1, -1, -1).contiguous()
+        #print("geom_featmap expand shape: ", geom_featmap.shape)
+        #print("uv_coord_map expand shape: ", uv_coord_map.shape)
 
 
         pred_res,pred_scales, pred_shs, = self.net.forward(pose_featmap=None,
                                                     geom_featmap=geom_featmap,
-                                                    uv_loc=uv_coord_map)
+                                                    uv_loc=uv_coord_map,
+                                                    sapiens_feature=sapiens_feature)
 
         
         
@@ -492,6 +523,7 @@ class AvatarModel:
     def render_free_stage1(self, batch_data, iteration):
         
         rendered_images = []
+        accumulations = []
         pose_data = batch_data['pose_data']
         transl_data = batch_data['transl_data']
 
@@ -515,11 +547,14 @@ class AvatarModel:
         cano2live_jnt_mats = torch.matmul(live_smpl.A, self.inv_mats)
         geom_featmap = self.geo_feature.expand(self.batch_size, -1, -1, -1).contiguous()
         uv_coord_map = self.uv_coord_map.expand(self.batch_size, -1, -1).contiguous()
-
-
+        sapiens_feature = self.sapiens_feature.expand(self.batch_size, -1, -1, -1).contiguous()
+        #print("geom_featmap max min: ", geom_featmap.max(),geom_featmap.min())
+        #print("uv_coord_map max min: ", uv_coord_map.max(),uv_coord_map.min())
+        #print("sapiens_feature max min: ", sapiens_feature.max(),sapiens_feature.min())
         pred_res,pred_scales, pred_shs, = self.net.forward(pose_featmap=None,
                                                     geom_featmap=geom_featmap,
-                                                    uv_loc=uv_coord_map)
+                                                    uv_loc=uv_coord_map,
+                                                    sapiens_feature=sapiens_feature)
         
         pred_res = pred_res.permute([0,2,1]) * 0.02  #(B, H, W ,3)
         pred_point_res = pred_res[:, self.valid_idx, ...].contiguous()
@@ -556,8 +591,8 @@ class AvatarModel:
             colors = pred_shs[batch_index]
             scales = pred_scales[batch_index] 
         
-            rendered_images.append(
-                render_batch(
+            
+            rendered_image, accumulation = render_batch_custom_background(
                     points=points,
                     shs=None,
                     colors_precomp=colors,
@@ -573,10 +608,12 @@ class AvatarModel:
                     full_proj_transform=full_proj_transform,
                     active_sh_degree=0,
                     camera_center=camera_center
-                )
             )
+            rendered_images.append(rendered_image)
+            accumulations.append(accumulation)
+            
 
-        return torch.stack(rendered_images, dim=0)
+        return torch.stack(rendered_images, dim=0).squeeze(0), torch.stack(accumulations, dim=0).squeeze(0)
 
 
     def render_free_stage2(self, batch_data, iteration):

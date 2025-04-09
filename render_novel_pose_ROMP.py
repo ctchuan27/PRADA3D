@@ -45,22 +45,31 @@ def render_sets(model, net, opt, epoch:int, args):
     settings.mode = 'webcam'
     #settings.show = True
     settings.t = True
-    settings.sc = 3
-    settings.onnx = True
+    settings.sc = 1
+    #settings.onnx = True
     settings.show_largest = True
     romp_model = romp.ROMP(settings)
-
+    cap = romp.utils.WebcamVideoStream(args.webcam_id)
+    cap.start()
+    background = cap.read()
+    iteration = 0
     with torch.no_grad():
         avatarmodel = AvatarModel(model, net, opt, train=False)
         avatarmodel.training_setup()
         avatarmodel.load(epoch)
-
-        cap = romp.utils.WebcamVideoStream(args.webcam_id)
-        cap.start()
         while True:
             frame = cap.read()
+            frame = cv2.resize(frame, (1080, 1080), interpolation=cv2.INTER_AREA)
             #frame = cv2.imread("./test.jpg")
-            
+            if iteration == 0:
+                background = cap.read()
+                background = cv2.cvtColor(background, cv2.COLOR_BGR2RGB)
+                background = cv2.resize(background, (1080, 1080), interpolation=cv2.INTER_AREA)
+                background = background.transpose(2,0,1)
+                background = background / 255.
+                background = torch.tensor(background, dtype=torch.float32, device="cuda")
+                iteration = iteration + 1
+                continue
             result = romp_model(frame)
             if result is None:
                 continue
@@ -109,7 +118,13 @@ def render_sets(model, net, opt, epoch:int, args):
                 batch_data = to_cuda(batch_data, device=torch.device('cuda:0'))
 
                 if model.train_stage ==1:
-                    image, = avatarmodel.render_free_stage1(batch_data, 59400)
+                    image, mask = avatarmodel.render_free_stage1(batch_data, 59400)
+                    #print("image shape: ", image.shape)
+                    if background is not None:
+                        mask[mask < 0.5] = 0
+                        mask[mask >= 0.5] = 1
+                        #print("mask max: ", mask.max())
+                        image = image * mask + background * (1 - mask)
                 else:
                     image, = avatarmodel.render_free_stage2(batch_data, 59400)
                 #print(image.shape)
@@ -120,13 +135,23 @@ def render_sets(model, net, opt, epoch:int, args):
                 # cv2.setWindowProperty('window_desktop', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
                 #plt.imshow(window_desktop)
                 show(image)
+                '''
+                image = image.detach().cpu().permute(1, 2, 0).numpy()
+                image_show = image.astype(np.double)
+                cv2.imshow('window', image_show[:, :, ::-1])
+                cv2.waitKey(20)
+                if cv2.waitKey(25) & 0xFF == ord('q'):
+                    cv2.destroyAllWindows()
+                    break
+                '''
                 #torchvision.utils.save_image(image, os.path.join(render_path, '{0:05d}'.format(idx) + ".png"))
                 #if idx == 0:
                 #    image_output = image.unsqueeze(0)
                 #else:
                     #image = image.unsqueeze(0)
                     #image_output = torch.cat((image_output,image), dim=0)
-        cap.stop()
+            
+    cap.stop()
 
     #write_video(filename=os.path.join(render_path, "video.mp4"),video_array=torch.FloatTensor(image_output.cpu()),fps=30)
 
@@ -138,6 +163,16 @@ def show(img):
     plt.imshow(np.transpose(npimg, (1, 2, 0)), interpolation='nearest')
     plt.show(block=False)
     plt.pause(0.005)
+    
+def show_cv2(img):
+    image = img.detach().cpu().permute(1, 2, 0).numpy()
+    image_save = image * 255.0
+    image_show = image.astype(np.double)
+    cv2.imshow('window', image_show[:, :, ::-1])
+        # cv2.waitKey(0)
+    #if cv2.waitKey(25) & 0xFF == ord('q'):
+        #cv2.destroyAllWindows()
+        #break
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="Testing script parameters")

@@ -16,8 +16,17 @@ from pathlib import Path
 
 def render_sets(model, net, opt, epoch:int):
     with torch.no_grad():
+        background = cv2.imread('./background.jpg')
+        background = cv2.cvtColor(background, cv2.COLOR_BGR2RGB)
+        background = cv2.resize(background, (1080, 1080), interpolation=cv2.INTER_AREA)
+        background = background.transpose(2,0,1)
+        background = background / 255.
+        background = torch.tensor(background, dtype=torch.float32, device="cuda")
+        background = None
+        #print("background max: ", background.max())
+        #print("background min: ", background.min())
         model.test_folder=os.getcwd() + '/assets/test_pose_v2'
-        avatarmodel = AvatarModel(model, net, opt, train=False)
+        avatarmodel = AvatarModel(model, net, opt, train=False, background=None)
         avatarmodel.training_setup()
         avatarmodel.load(epoch)
         #novel_pose_dataset = avatarmodel.getVIBEposeDataset()
@@ -38,7 +47,13 @@ def render_sets(model, net, opt, epoch:int):
             batch_data = to_cuda(batch_data, device=torch.device('cuda:0'))
 
             if model.train_stage ==1:
-                image, = avatarmodel.render_free_stage1(batch_data, 59400)
+                image, mask = avatarmodel.render_free_stage1(batch_data, 59400)
+                #print("image shape: ", image.shape)
+                if background is not None:
+                    mask[mask < 0.5] = 0
+                    mask[mask >= 0.5] = 1
+                    #print("mask max: ", mask.max())
+                    image = image * mask + background * (1 - mask)
             else:
                 image, = avatarmodel.render_free_stage2(batch_data, 59400)
             #print(image.shape)
