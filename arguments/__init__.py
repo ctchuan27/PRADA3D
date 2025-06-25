@@ -89,7 +89,11 @@ class ModelParams(ParamGroup):
         # input uv size and query uv size, 
         self.query_posmap_size= 512
         #self.inp_posmap_size= 128
-        self.inp_posmap_size= 256
+        self.inp_posmap_size= 512
+
+        #####################rm avatar rectification(deformation model) 2025.04.16##################################
+        self.deform_on = False
+        ###########################################################################################################
 
         super().__init__(parser, "Loading Parameters", sentinel)
 
@@ -134,16 +138,36 @@ class OptimizationParams(ParamGroup):
         self.lambda_lpips = 0.2
         self.lambda_aiap = 0.1
         self.lambda_color = 3e-2
+        self.lambda_deform_offset = 0.01
 
         self.lambda_pose = 10
         self.lambda_rgl = 1e1
         self.log_iter = 2000
         self.lpips_start_iter = 40
         self.pose_op_start_iter = 1800  #define when to start pose optimization, >epochs means no optimization
+        
         self.lr_net = 3e-3
         self.lr_geomfeat = 5e-4
 
         self.sched_milestones = [int(self.epochs/ 3), int(self.epochs *2/ 3)]
+
+
+        #####################rm avatar rectification(deformation model) 2025.04.16##################################
+        self.deform_start_iter = 0
+        #optim_deformation:
+        self.deform_lr = 0.0001  #0.0001
+        self.deform_sched_lr_init = 0.0001
+        self.deform_sched_lr_final = 0.0001
+        self.deform_sched_lr_delay_mult = 0.01
+        #self.deform_sched_lr_max_steps = ${optim.total_iteration}
+  
+        #optim_grid:
+        self.grid_lr = 0.005
+        self.grid_sched_lr_init = 0.005
+        self.grid_sched_lr_final = 0.005
+        self.grid_sched_lr_delay_mult = 0.01
+        #self.grid_sched_lr_max_steps = ${optim.total_iteration}
+        ###########################################################################################################
 
         super().__init__(parser, "Optimization Parameters")
 

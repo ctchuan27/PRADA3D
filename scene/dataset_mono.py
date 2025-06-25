@@ -495,8 +495,9 @@ class MonoDataset_novel_pose(Dataset):
         pose_data = self.pose_data[pose_idx]
         transl_data = self.transl_data[pose_idx]
 
-
+        ##########################can be decide by yourself 2025.05.03################################################
         width, height = 720, 1280
+        ##############################################################################################################
 
         FovY = focal2fov(focal_length_y, height)
         FovX = focal2fov(focal_length_x, width)
