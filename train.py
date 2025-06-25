@@ -31,7 +31,8 @@ def train(model, net, opt, saving_epochs, checkpoint_epochs):
     first_iter = 0
     epoch_start = 0
     data_length = len(train_loader)
-    avatarmodel.training_setup()
+    total_iter = opt.epochs * data_length
+    avatarmodel.training_setup(total_iteration=total_iter)
 
     if checkpoint_epochs:
         avatarmodel.load(checkpoint_epochs[0])
@@ -41,7 +42,8 @@ def train(model, net, opt, saving_epochs, checkpoint_epochs):
     if model.train_stage == 2:
         avatarmodel.stage_load(model.stage1_out_path)
     
-    progress_bar = tqdm(range(first_iter, data_length * opt.epochs), desc="Training progress")
+    
+    progress_bar = tqdm(range(first_iter, total_iter), desc="Training progress")
     ema_loss_for_log = 0.0
     
     for epoch in range(epoch_start + 1, opt.epochs + 1):
@@ -50,6 +52,9 @@ def train(model, net, opt, saving_epochs, checkpoint_epochs):
             avatarmodel.net.train()
             avatarmodel.pose.train()
             avatarmodel.transl.train()
+            if model.deform_on == True:
+                avatarmodel._deformation.train()
+            #avatarmodel.attention_net.train()
         else:
             avatarmodel.net.train()
             avatarmodel.pose.eval()
@@ -61,20 +66,34 @@ def train(model, net, opt, saving_epochs, checkpoint_epochs):
         wdecay_rgl = adjust_loss_weights(opt.lambda_rgl, epoch, mode='decay', start=epoch_start, every=20)
 
         for _, batch_data in enumerate(train_loader):
-            
             first_iter += 1
+            #####################rm avatar rectification(deformation model) 2025.04.16##################################
+            if model.deform_on == True:
+                avatarmodel.update_deform_learning_rate(first_iter)
+            ###########################################################################################################
             batch_data = to_cuda(batch_data, device=torch.device('cuda:0'))
             gt_image = batch_data['original_image']
+            #torchvision.utils.save_image(gt_image, os.path.join(model.model_path, 'log', '{0:05d}_gt'.format(first_iter) + ".png"))
 
             if model.train_stage ==1:
-                image, points, offset_loss, geo_loss, scale_loss, colors = avatarmodel.train_stage1(batch_data, first_iter)
-                scale_loss = opt.lambda_scale  * scale_loss
-                offset_loss = wdecay_rgl * offset_loss
-                
-                Ll1 = (1.0 - opt.lambda_dssim) * l1_loss_w(image, gt_image)
-                ssim_loss = opt.lambda_dssim * (1.0 - ssim(image, gt_image)) 
+                if model.deform_on == True:
+                    image, points, offset_loss, geo_loss, scale_loss, colors, deform_offset_loss = avatarmodel.train_stage1(batch_data, first_iter, total_iter, epoch)
+                    scale_loss = opt.lambda_scale  * scale_loss
+                    offset_loss = wdecay_rgl * offset_loss
+                    
+                    Ll1 = (1.0 - opt.lambda_dssim) * l1_loss_w(image, gt_image)
+                    ssim_loss = opt.lambda_dssim * (1.0 - ssim(image, gt_image)) 
 
-                loss = scale_loss + offset_loss + Ll1 + ssim_loss + geo_loss
+                    loss = scale_loss + offset_loss + Ll1 + ssim_loss + geo_loss + deform_offset_loss * wdecay_rgl
+                else:
+                    image, points, offset_loss, geo_loss, scale_loss, colors = avatarmodel.train_stage1(batch_data, first_iter, total_iter)
+                    scale_loss = opt.lambda_scale  * scale_loss
+                    offset_loss = wdecay_rgl * offset_loss
+                    
+                    Ll1 = (1.0 - opt.lambda_dssim) * l1_loss_w(image, gt_image)
+                    ssim_loss = opt.lambda_dssim * (1.0 - ssim(image, gt_image)) 
+
+                    loss = scale_loss + offset_loss + Ll1 + ssim_loss + geo_loss
             else:
                 image, points, pose_loss, offset_loss, colors = avatarmodel.train_stage2(batch_data, first_iter)
 

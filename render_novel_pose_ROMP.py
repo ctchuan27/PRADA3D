@@ -59,12 +59,16 @@ def render_sets(model, net, opt, epoch:int, args):
         avatarmodel.load(epoch)
         while True:
             frame = cap.read()
-            frame = cv2.resize(frame, (1080, 1080), interpolation=cv2.INTER_AREA)
+            ##################如果人的input size太小render出來會腫腫的 2025.05.03#################################
+            frame = cv2.resize(frame, (1920, 1440), interpolation=cv2.INTER_AREA)
+            ####################################################################################################
+            #frame = cv2.resize(frame, (1080, 1080), interpolation=cv2.INTER_AREA)
             #frame = cv2.imread("./test.jpg")
             if iteration == 0:
                 background = cap.read()
+                background = cv2.resize(background, (1920, 1440), interpolation=cv2.INTER_AREA)
                 background = cv2.cvtColor(background, cv2.COLOR_BGR2RGB)
-                background = cv2.resize(background, (1080, 1080), interpolation=cv2.INTER_AREA)
+                #background = cv2.resize(background, (1080, 1080), interpolation=cv2.INTER_AREA)
                 background = background.transpose(2,0,1)
                 background = background / 255.
                 background = torch.tensor(background, dtype=torch.float32, device="cuda")
@@ -90,6 +94,8 @@ def render_sets(model, net, opt, epoch:int, args):
             K[0, 0] = K[1, 1] = f
             K[0, 2] = frame.shape[1] / 2
             K[1, 2] = frame.shape[0] / 2
+            #K[0, 2] = 1080.0 / 2
+            #K[1, 2] = 1080.0 / 2
             T = np.eye(4)
             #T[0, 3] = 1
             #T[1, 3] = 0.6
@@ -111,20 +117,20 @@ def render_sets(model, net, opt, epoch:int, args):
                                                 num_workers = 4,)
 
             #render_path = os.path.join(avatarmodel.model_path, 'novel_pose', "ours_{}".format(epoch))
-            render_path = '/home/enjhih/Tun-Chuan/GaussianAvatar/output/test_train'
+            render_path = '/home/enjhih/Tun-Chuan/GaussianAvatar/output/m3c_demo'
             makedirs(render_path, exist_ok=True)
             
             for idx, batch_data in enumerate(tqdm(novel_pose_loader, desc="Rendering progress")):
                 batch_data = to_cuda(batch_data, device=torch.device('cuda:0'))
 
                 if model.train_stage ==1:
-                    image, mask = avatarmodel.render_free_stage1(batch_data, 59400)
+                    image, mask = avatarmodel.render_free_stage1(batch_data, 59400, 59400)
                     #print("image shape: ", image.shape)
                     if background is not None:
                         mask[mask < 0.5] = 0
                         mask[mask >= 0.5] = 1
                         #print("mask max: ", mask.max())
-                        image = image * mask + background * (1 - mask)
+                        background_image = image * mask + background * (1 - mask)
                 else:
                     image, = avatarmodel.render_free_stage2(batch_data, 59400)
                 #print(image.shape)
@@ -144,7 +150,10 @@ def render_sets(model, net, opt, epoch:int, args):
                     cv2.destroyAllWindows()
                     break
                 '''
-                #torchvision.utils.save_image(image, os.path.join(render_path, '{0:05d}'.format(idx) + ".png"))
+                cv2.imwrite(os.path.join(render_path, '{0:05d}'.format(iteration) + "_input.png"),frame)
+                torchvision.utils.save_image(image, os.path.join(render_path, '{0:05d}'.format(iteration) + "_output.png"))
+                torchvision.utils.save_image(background_image, os.path.join(render_path, '{0:05d}'.format(iteration) + "_output_background.png"))
+                iteration = iteration + 1
                 #if idx == 0:
                 #    image_output = image.unsqueeze(0)
                 #else:

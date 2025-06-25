@@ -30,10 +30,10 @@ def render_sets(model, net, opt, epoch:int):
         avatarmodel.training_setup()
         avatarmodel.load(epoch)
         #novel_pose_dataset = avatarmodel.getVIBEposeDataset()
-        #novel_pose_dataset = avatarmodel.getNovelposeDataset()
-        novel_view_dataset = avatarmodel.getNovelviewDataset()
-        #novel_pose_loader = torch.utils.data.DataLoader(novel_pose_dataset, batch_size = 1, shuffle = False, num_workers = 4,)
-        novel_pose_loader = torch.utils.data.DataLoader(novel_view_dataset, batch_size = 1, shuffle = False, num_workers = 4,)
+        novel_pose_dataset = avatarmodel.getNovelposeDataset()
+        #novel_view_dataset = avatarmodel.getNovelviewDataset()
+        novel_pose_loader = torch.utils.data.DataLoader(novel_pose_dataset, batch_size = 1, shuffle = False, num_workers = 4,)
+        #novel_pose_loader = torch.utils.data.DataLoader(novel_view_dataset, batch_size = 1, shuffle = False, num_workers = 4,)
 
         #render_path = os.path.join(avatarmodel.model_path, 'novel_pose', "ours_{}".format(epoch))
         render_path = '/home/enjhih/Tun-Chuan/GaussianAvatar/output/test_train'
@@ -47,7 +47,12 @@ def render_sets(model, net, opt, epoch:int):
             batch_data = to_cuda(batch_data, device=torch.device('cuda:0'))
 
             if model.train_stage ==1:
-                image, mask = avatarmodel.render_free_stage1(batch_data, 59400)
+                image, mask = avatarmodel.render_free_stage1(batch_data, 59400, 59400)
+                
+                ####################gaussians visualize 2025.05.02##############################
+                #image, mask = avatarmodel.render_gaussians(batch_data, 59400, 59400)
+                ######################################################################
+                
                 #print("image shape: ", image.shape)
                 if background is not None:
                     mask[mask < 0.5] = 0
