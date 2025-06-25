@@ -83,13 +83,18 @@ class POP_no_unet(nn.Module):
         uv_loc = uv_loc.expand(N_subsample, -1, -1, -1).permute([1, 2, 0, 3])
 
         # uv and pix feature is shared for all points in each patch
+        #print("pix_feature dimension:", pix_feature.shape)
         pix_feature = pix_feature.view(B, C, -1).expand(N_subsample, -1,-1,-1).permute([1,2,3,0]) # [B, C, N_pix, N_sample_perpix]
+        #print("pix_feature 2 dimension:", pix_feature.shape)
         pix_feature = pix_feature.reshape(B, C, -1)
+        #print("pix_feature 3 dimension:", pix_feature.shape)
 
         uv_loc = uv_loc.reshape(B, -1, uv_feat_dim).transpose(1, 2)  # [B, N_pix, N_subsample, 2] --> [B, 2, Num of all pq subpixels]
-        #print("dimension:", torch.cat([pix_feature, uv_loc],1).shape)
+        #print("input dimension:", torch.cat([pix_feature, uv_loc],1).shape)
         residuals, scales, shs = self.decoder(torch.cat([pix_feature, uv_loc], 1))  # [B, 3, N all subpixels]
-        
+        #print("residuals shape: ", residuals.shape)
+        #print("scales shape: ", scales.shape)
+        #print("shs shape: ", shs.shape)
 
         return residuals, scales, shs 
 
