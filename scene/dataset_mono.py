@@ -149,6 +149,7 @@ class MonoDataset_train(Dataset):
                 self.pose_data = torch.from_numpy(self.pose_data)
             if not torch.is_tensor(self.smpl_data['trans']):
                 self.transl_data = torch.from_numpy(self.transl_data)
+
         else:
             self.pose_data = self.smpl_data['body_pose'][:self.data_length]
             self.transl_data = self.smpl_data['trans'][:self.data_length,:]
@@ -158,14 +159,34 @@ class MonoDataset_train(Dataset):
             if not torch.is_tensor(self.smpl_data['trans']):
                 self.transl_data = torch.from_numpy(self.transl_data)
 
+        if dataset_parms.lhm:
+            self.lhm_start = self.smpl_data['lhm_start']
+
         if dataset_parms.cam_static:
-            cam_path = join(self.data_folder, 'cam_parms.npz')
-            cam_npy = np.load(cam_path)
-            extr_npy = cam_npy['extrinsic']
-            intr_npy = cam_npy['intrinsic']
-            self.R = np.array(extr_npy[:3, :3], np.float32).reshape(3, 3).transpose(1, 0)
-            self.T = np.array([extr_npy[:3, 3]], np.float32)
-            self.intrinsic = np.array(intr_npy, np.float32).reshape(3, 3)
+            if dataset_parms.lhm:
+                cam_path = join(self.data_folder, 'cam_parms.npz')
+                cam_npy = np.load(cam_path)
+                extr_npy = cam_npy['extrinsic']
+                intr_npy = cam_npy['intrinsic']
+                self.R = np.array(extr_npy[:3, :3], np.float32).reshape(3, 3).transpose(1, 0)
+                self.T = np.array([extr_npy[:3, 3]], np.float32)
+                self.intrinsic = np.array(intr_npy, np.float32).reshape(3, 3)   
+
+                lhm_cam_path = join(self.data_folder, 'cam_parms_lhm.npz')
+                lhm_cam_npy = np.load(lhm_cam_path)
+                lhm_extr_npy = lhm_cam_npy['extrinsic']
+                lhm_intr_npy = lhm_cam_npy['intrinsic']
+                self.lhm_R = np.array(lhm_extr_npy[:3, :3], np.float32).reshape(3, 3).transpose(1, 0)
+                self.lhm_T = np.array([lhm_extr_npy[:3, 3]], np.float32)
+                self.lhm_intrinsic = np.array(lhm_intr_npy, np.float32).reshape(3, 3)            
+            else:
+                cam_path = join(self.data_folder, 'cam_parms.npz')
+                cam_npy = np.load(cam_path)
+                extr_npy = cam_npy['extrinsic']
+                intr_npy = cam_npy['intrinsic']
+                self.R = np.array(extr_npy[:3, :3], np.float32).reshape(3, 3).transpose(1, 0)
+                self.T = np.array([extr_npy[:3, 3]], np.float32)
+                self.intrinsic = np.array(intr_npy, np.float32).reshape(3, 3)
           
         
     def __len__(self):
@@ -177,6 +198,7 @@ class MonoDataset_train(Dataset):
     @torch.no_grad()
     def getitem(self, index, ignore_list):
         pose_idx, name_idx = self.name_list[index]
+        #print(self.name_list[index])
 
         image_path = join(self.data_folder, 'images' ,name_idx + '.' + self.image_fix)
         
@@ -199,9 +221,15 @@ class MonoDataset_train(Dataset):
             intrinsic = np.array(intr_npy, np.float32).reshape(3, 3)
         
         else:
-            R = self.R
-            T = self.T
-            intrinsic = self.intrinsic
+            if self.dataset_parms.lhm and self.lhm_start <= pose_idx:
+                #print("Using LHM camera parameters")
+                R = self.lhm_R
+                T = self.lhm_T
+                intrinsic = self.lhm_intrinsic  
+            else:
+                R = self.R
+                T = self.T
+                intrinsic = self.intrinsic
 
         focal_length_x = intrinsic[0, 0]
         focal_length_y = intrinsic[1, 1]
@@ -214,13 +242,18 @@ class MonoDataset_train(Dataset):
         FovX = focal2fov(focal_length_x, width)
 
         if not self.dataset_parms.no_mask:
-            mask = np.array(Image.open(mask_path))
+            try:
+                mask = np.array(Image.open(mask_path))
+                if len(mask.shape) < 3:
+                    mask = mask[..., None]
+                mask[mask < 128] = 0
+                mask[mask >= 128] = 1
+            except Exception as e:
+                #print(f"Warning: failed to load mask at {mask_path}, using white mask. Error: {e}")
+                mask = np.ones_like(image, dtype=np.uint8)
+                if len(mask.shape) < 3:
+                    mask = mask[..., None]
 
-            if len(mask.shape) <3:
-                mask = mask[...,None]
-
-            mask[mask < 128] = 0
-            mask[mask >= 128] = 1
             color_img = image * mask + (1 - mask) * 255
             image = Image.fromarray(np.array(color_img, dtype=np.byte), "RGB")
 
@@ -332,11 +365,15 @@ class MonoDataset_test(Dataset):
         pose_idx, name_idx = self.name_list[index]
 
         image_path = join(self.data_folder, 'images' ,name_idx + '.' + self.image_fix)
+        if self.dataset_parms.sr:
+            eval_image_path = join(self.data_folder, 'raw_images' ,name_idx + '.' + self.image_fix)
         
         cam_path = join(self.data_folder, 'cam_parms', name_idx + '.npz')
 
         if not self.dataset_parms.no_mask:
             mask_path = join(self.data_folder, 'masks', name_idx + '.' + self.mask_fix)
+            if self.dataset_parms.sr:
+                eval_mask_path = join(self.data_folder, 'raw_masks', name_idx + '.' + self.mask_fix)
         if self.dataset_parms.train_stage == 2:
 
             inp_posmap_path = self.data_folder + '/inp_map/' +'inp_posemap_%s_%s.npz'% (str(self.dataset_parms.inp_posmap_size), str(pose_idx).zfill(8))
@@ -360,16 +397,29 @@ class MonoDataset_test(Dataset):
 
         pose_data = self.pose_data[pose_idx]
         transl_data = self.transl_data[pose_idx]
-
+        if self.dataset_parms.sr:
+            eval_image = Image.open(eval_image_path)
         image = Image.open(image_path)
         width, height = image.size
+        width = width
+        height = height
 
         FovY = focal2fov(focal_length_y, height)
         FovX = focal2fov(focal_length_x, width)
 
         if not self.dataset_parms.no_mask:
-            mask = np.array(Image.open(mask_path))
+            
+            if self.dataset_parms.sr:
+                eval_mask = np.array(Image.open(eval_mask_path))
+                if len(eval_mask.shape) <3:
+                    eval_mask = eval_mask[...,None]
+                eval_mask[eval_mask < 128] = 0
+                eval_mask[eval_mask >= 128] = 1
+                # color_img = image * mask 
+                eval_image = eval_image * eval_mask + (1 - eval_mask) * 255
+                eval_image = Image.fromarray(np.array(eval_image, dtype=np.byte), "RGB")
 
+            mask = np.array(Image.open(mask_path))
             if len(mask.shape) <3:
                 mask = mask[...,None]
 
@@ -395,6 +445,16 @@ class MonoDataset_test(Dataset):
             resized_image =  resized_image.unsqueeze(dim=-1).permute(2, 0, 1)
 
         original_image = resized_image.clamp(0.0, 1.0)
+
+        if self.dataset_parms.sr:
+            eval_image = torch.from_numpy(np.array(eval_image)) / 255.0
+            if len(eval_image.shape) == 3:
+                eval_image =  eval_image.permute(2, 0, 1)
+            else:
+                eval_image =  eval_image.unsqueeze(dim=-1).permute(2, 0, 1)
+
+            eval_image = eval_image.clamp(0.0, 1.0)
+            data_item['eval_image'] = eval_image
 
         data_item['original_image'] = original_image
         data_item['FovX'] = FovX
@@ -496,7 +556,7 @@ class MonoDataset_novel_pose(Dataset):
         transl_data = self.transl_data[pose_idx]
 
         ##########################can be decide by yourself 2025.05.03################################################
-        width, height = 720, 1280
+        width, height = 1080, 1080
         ##############################################################################################################
 
         FovY = focal2fov(focal_length_y, height)

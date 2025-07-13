@@ -49,9 +49,15 @@ def render_sets(model, net, opt, epoch:int, args):
     #settings.onnx = True
     settings.show_largest = True
     romp_model = romp.ROMP(settings)
+    ################2025.07.02###############################
     cap = romp.utils.WebcamVideoStream(args.webcam_id)
+    #cap = cv2.VideoCapture(args.webcam_id)
+    #if not cap.isOpened():
+     #   print("Cannot open camera")
+      #  exit()
+    #######################################################
     cap.start()
-    background = cap.read()
+    #background = cap.read()
     iteration = 0
     with torch.no_grad():
         avatarmodel = AvatarModel(model, net, opt, train=False)
@@ -59,11 +65,21 @@ def render_sets(model, net, opt, epoch:int, args):
         avatarmodel.load(epoch)
         while True:
             frame = cap.read()
+            #if not ret:
+             #   print("Cannot receive frame")   # 如果讀取錯誤，印出訊息
+              #  break
             ##################如果人的input size太小render出來會腫腫的 2025.05.03#################################
             frame = cv2.resize(frame, (1920, 1440), interpolation=cv2.INTER_AREA)
             ####################################################################################################
             #frame = cv2.resize(frame, (1080, 1080), interpolation=cv2.INTER_AREA)
             #frame = cv2.imread("./test.jpg")
+            #print("cv2 show")
+            #cv2.startWindowThread()
+            
+            #cv2.imshow("Gaussian Avatar", frame)
+            #if cv2.waitKey(1) & 0xFF == ord('q'):
+                #break
+            
             if iteration == 0:
                 background = cap.read()
                 background = cv2.resize(background, (1920, 1440), interpolation=cv2.INTER_AREA)
@@ -74,6 +90,7 @@ def render_sets(model, net, opt, epoch:int, args):
                 background = torch.tensor(background, dtype=torch.float32, device="cuda")
                 iteration = iteration + 1
                 continue
+            
             result = romp_model(frame)
             if result is None:
                 continue
@@ -140,7 +157,7 @@ def render_sets(model, net, opt, epoch:int, args):
                 #cv2.namedWindow('window_desktop', cv2.WINDOW_NORMAL)
                 # cv2.setWindowProperty('window_desktop', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
                 #plt.imshow(window_desktop)
-                show(image)
+                #show(image)
                 '''
                 image = image.detach().cpu().permute(1, 2, 0).numpy()
                 image_show = image.astype(np.double)
@@ -150,9 +167,14 @@ def render_sets(model, net, opt, epoch:int, args):
                     cv2.destroyAllWindows()
                     break
                 '''
-                cv2.imwrite(os.path.join(render_path, '{0:05d}'.format(iteration) + "_input.png"),frame)
-                torchvision.utils.save_image(image, os.path.join(render_path, '{0:05d}'.format(iteration) + "_output.png"))
-                torchvision.utils.save_image(background_image, os.path.join(render_path, '{0:05d}'.format(iteration) + "_output_background.png"))
+                npimg = image.cpu().numpy()
+                
+                cv2.imshow("Gaussian Avatar", cv2.cvtColor(np.transpose(npimg, (1, 2, 0)), cv2.COLOR_BGR2RGB))
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+                #cv2.imwrite(os.path.join(render_path, '{0:05d}'.format(iteration) + "_input.png"),frame)
+                #torchvision.utils.save_image(image, os.path.join(render_path, '{0:05d}'.format(iteration) + "_output.png"))
+                #torchvision.utils.save_image(background_image, os.path.join(render_path, '{0:05d}'.format(iteration) + "_output_background.png"))
                 iteration = iteration + 1
                 #if idx == 0:
                 #    image_output = image.unsqueeze(0)
@@ -161,7 +183,8 @@ def render_sets(model, net, opt, epoch:int, args):
                     #image_output = torch.cat((image_output,image), dim=0)
             
     cap.stop()
-
+    #cap.release()
+    cv2.destroyAllWindows()
     #write_video(filename=os.path.join(render_path, "video.mp4"),video_array=torch.FloatTensor(image_output.cpu()),fps=30)
 
 def show(img):

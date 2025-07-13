@@ -25,7 +25,7 @@ def render_sets(model, net, opt, epoch:int):
         background = None
         #print("background max: ", background.max())
         #print("background min: ", background.min())
-        model.test_folder=os.getcwd() + '/assets/test_pose_v2'
+        #model.test_folder=os.getcwd() + '/assets/test_pose_v2'
         avatarmodel = AvatarModel(model, net, opt, train=False, background=None)
         avatarmodel.training_setup()
         avatarmodel.load(epoch)
@@ -69,7 +69,14 @@ def render_sets(model, net, opt, epoch:int):
             # cv2.setWindowProperty('window_desktop', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
             #plt.imshow(window_desktop)
             
-            show(image)
+            #show(image)
+            npimg = image.cpu().numpy()
+            cv2_image = cv2.cvtColor(np.transpose(npimg, (1, 2, 0)), cv2.COLOR_BGR2RGB)
+            cv2.imshow("Gaussian Avatar", cv2_image)
+            cv2.imwrite(os.path.join(render_path, '{0:05d}'.format(idx) + ".png"),(cv2_image * 255).clip(0, 255).astype(np.uint8))
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+            
             #npimg = np.uint8(np.transpose(image.cpu().numpy(), (1, 2, 0)))
             #cv2_image = cv2.cvtColor(npimg, cv2.COLOR_BGR2RGB)
             #out.write(cv2_image)
@@ -87,7 +94,7 @@ def render_sets(model, net, opt, epoch:int):
                 #image_output = torch.cat((image_output,image), dim=0)
         #out.release()
         
-
+    cv2.destroyAllWindows()
     #write_video(filename=os.path.join(render_path, "video.mp4"),video_array=torch.FloatTensor(image_output.cpu()),fps=30)
 
 def show(img):

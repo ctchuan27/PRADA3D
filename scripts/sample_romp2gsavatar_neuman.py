@@ -8,33 +8,27 @@ from os.path import join
 
 
 def load_smpl_param(path, data_list, return_thata=True):
-    smpl_params = dict(np.load(str(path)))
-    if "thetas" in smpl_params:
-        smpl_params["body_pose"] = smpl_params["thetas"][..., 3:]
-        smpl_params["global_orient"] = smpl_params["thetas"][..., :3]
+    smpl_params = torch.load(str(path))
+    smpl_params["body_pose"] = smpl_params["body_pose"][..., 3:]
+    smpl_params["global_orient"] = smpl_params["body_pose"][..., :3]
 
-    if not return_thata:
-        return {
-        "betas": smpl_params["betas"].astype(np.float32),
-        "body_pose": smpl_params["body_pose"].astype(np.float32),
-        "global_orient": smpl_params["global_orient"].astype(np.float32),
-        "transl": smpl_params["transl"].astype(np.float32),
-    }
 
-    theta = np.zeros((len(data_list), 72)).astype(np.float32)
-    trans  = np.zeros((len(data_list), 3)).astype(np.float32)
+    theta = torch.zeros((len(data_list), 72)).float()
+    trans  = torch.zeros((len(data_list), 3)).float()
     iter = 0
+    #print(data_list)
+    #print(theta[iter, :3])
     for idx in data_list:
-        theta[iter, :3] = smpl_params["global_orient"][idx].astype(np.float32)
-        theta[iter, 3:] = smpl_params["body_pose"][idx].astype(np.float32)
-        trans[iter, :] = smpl_params["transl"][idx].astype(np.float32)
+        theta[iter, :3] = smpl_params["global_orient"][idx]
+        theta[iter, 3:] = smpl_params["body_pose"][idx]
+        trans[iter, :] = smpl_params["trans"][idx]
 
         iter +=1
 
     return {
-        "beta": torch.from_numpy(smpl_params["betas"].reshape(1,10).astype(np.float32)),
-        "body_pose": torch.from_numpy(theta),
-        "trans": torch.from_numpy(trans),
+        "beta": smpl_params["beta"],
+        "body_pose": theta,
+        "trans": trans,
     }
 
 
@@ -47,8 +41,8 @@ def load_smpl_param(path, data_list, return_thata=True):
 # test_list = 446:647:4]
 snap = False
 
-data_folder = '/home/enjhih/Tun-Chuan/GaussianAvatar/neuman_dataset'
-subject = 'bike_refit'
+data_folder = '/home/enjhih/Tun-Chuan/GaussianAvatar/neuman_dataset/'
+subject = 'bike'
 #data_folder = '/home/enjhih/Tun-Chuan/GaussianAvatar/default_dataset/'
 #subject = 'm4c_refit'
 
@@ -74,7 +68,6 @@ else:
     train_list = list(set(range(scene_length)) - set(val_list))
     test_list = val_list[:len(val_list) // 2]
     val_list = val_list[len(val_list) // 2:]
-    train_list = sorted(train_list+test_list+val_list)
 
     train_split_name = []
     test_split_name = []
@@ -102,7 +95,7 @@ os.makedirs(test_image_path, exist_ok=True)
 os.makedirs(test_mask_path, exist_ok=True)
 
 # load camera
-camera = np.load(join(data_path, "cameras.npz"))
+camera = np.load(join(data_path, "cam_parms.npz"))
 intrinsic = np.array(camera["intrinsic"])
 extrinsic = np.array(camera["extrinsic"])
 cam_all = {} 
@@ -112,15 +105,13 @@ cam_all['extrinsic'] = extrinsic
 np.savez(join(out_path, 'cam_parms.npz'), **cam_all)
 np.savez(join(test_path, 'cam_parms.npz'), **cam_all)
 
-train_smpl_params = load_smpl_param(join(data_path, "poses_optimized.npz"), train_list)
+train_smpl_params = load_smpl_param(join(data_path, "smpl_parms.pth"), train_list)
 
 torch.save(train_smpl_params ,join(out_path, 'smpl_parms.pth'))
 
-test_smpl_params = load_smpl_param(join(data_path, "poses_optimized.npz"), test_list)
+test_smpl_params = load_smpl_param(join(data_path, "smpl_parms.pth"), test_list)
 
 torch.save(test_smpl_params ,join(test_path, 'smpl_parms.pth'))
-
-print(len(os.listdir(all_image_path)), len(os.listdir(all_mask_apth)))
 
 assert len(os.listdir(all_image_path)) == len(os.listdir(all_mask_apth))
 

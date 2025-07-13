@@ -163,14 +163,14 @@ def save_npz(data_path, res=128, uv_template_fn=None):
 
 
 if __name__ == '__main__':
-    smplx_parm_path = '/home/enjhih/Tun-Chuan/GaussianAvatar/default_dataset/people_snapshot/m3c_processed/test' # path to the folder that include smpl params
+    smplx_parm_path = '/home/enjhih/Tun-Chuan/GaussianAvatar/zju_dataset/my_387_processed/test' # path to the folder that include smpl params
     #smplx_parm_path = '/home/enjhih/Tun-Chuan/GaussianAvatar/default_dataset/m4c_refit/test'
     parms_name = 'smpl_parms.pth'
     parms_name_smplx = 'smplx_parms.pth'
     uv_template_fn = '../assets/template_mesh_smpl_uv.obj'
     uv_template_fn_smplx = '../assets/template_mesh_smplx_uv.obj'
     assets_path = ''    # path to the folder that include 'assets'
-    resolution = 256
+    resolution = 512
 
     print('saving obj...')
     save_obj(smplx_parm_path, parms_name)

@@ -91,9 +91,9 @@ def save_obj(data_path, name):
 
 #============================2025.04.02=========================
 def save_obj_smplx(data_path, name):
-    smplx_data = torch.load( data_path + '/smplx_parms.pth')
+    smplx_data = torch.load( data_path + '/smpl_parms.pth')
 
-    smplx_model = smplx.SMPLX(model_path='./assets/smpl_files/smplx',gender = 'neutral', use_pca=False, num_pca_comps=45, flat_hand_mean=True, batch_size=1)
+    smplx_model = smplx.SMPLX(model_path='../assets/smpl_files/smplx',gender = 'neutral', use_pca=False, num_pca_comps=45, flat_hand_mean=True, batch_size=1)
 
     cano_dir = os.path.join(data_path,)
     live_smplx = smplx_model.forward(betas = smplx_data['beta'][0][None],
@@ -163,21 +163,21 @@ def save_npz(data_path, res=128, uv_template_fn=None):
 
 
 if __name__ == '__main__':
-    smplx_parm_path = '/home/enjhih/Tun-Chuan/GaussianAvatar/default_dataset/people_snapshot/m3c_processed/test' # path to the folder that include smpl params
+    smplx_parm_path = '/home/enjhih/Tun-Chuan/GaussianAvatar/sr_dataset/people_snapshot/m4c/train' # path to the folder that include smpl params
     #smplx_parm_path = '/home/enjhih/Tun-Chuan/GaussianAvatar/default_dataset/m4c_refit/test'
     parms_name = 'smpl_parms.pth'
-    parms_name_smplx = 'smplx_parms.pth'
+    parms_name_smplx = 'smpl_parms.pth'
     uv_template_fn = '../assets/template_mesh_smpl_uv.obj'
     uv_template_fn_smplx = '../assets/template_mesh_smplx_uv.obj'
     assets_path = ''    # path to the folder that include 'assets'
-    resolution = 256
+    resolution = 512
 
     print('saving obj...')
-    save_obj(smplx_parm_path, parms_name)
-    #save_obj_smplx(smplx_parm_path, parms_name_smplx)
+    #save_obj(smplx_parm_path, parms_name)
+    save_obj_smplx(smplx_parm_path, parms_name_smplx)
 
     print(f'saving pose_map {resolution} ...')
-    save_npz(smplx_parm_path, resolution, uv_template_fn)
-    #save_npz_smplx(smplx_parm_path, resolution, uv_template_fn_smplx)
+    #save_npz(smplx_parm_path, resolution, uv_template_fn)
+    save_npz_smplx(smplx_parm_path, resolution, uv_template_fn_smplx)
     
     #save_lbs('/home/enjhih/Tun-Chuan/GaussianAvatar/assets', resolution=128)

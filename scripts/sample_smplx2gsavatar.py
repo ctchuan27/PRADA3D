@@ -7,8 +7,9 @@ import numpy as np
 from os.path import join
 
 
-def load_smpl_param(path, data_list, return_thata=True):
+def load_smplx_param(path, data_list, return_thata=True):
     smpl_params = dict(np.load(str(path)))
+    #print(smpl_params)
     if "thetas" in smpl_params:
         smpl_params["body_pose"] = smpl_params["thetas"][..., 3:]
         smpl_params["global_orient"] = smpl_params["thetas"][..., :3]
@@ -21,7 +22,7 @@ def load_smpl_param(path, data_list, return_thata=True):
         "transl": smpl_params["transl"].astype(np.float32),
     }
 
-    theta = np.zeros((len(data_list), 72)).astype(np.float32)
+    theta = np.zeros((len(data_list), 165)).astype(np.float32)
     trans  = np.zeros((len(data_list), 3)).astype(np.float32)
     iter = 0
     for idx in data_list:
@@ -47,8 +48,8 @@ def load_smpl_param(path, data_list, return_thata=True):
 # test_list = 446:647:4]
 snap = False
 
-data_folder = '/home/enjhih/Tun-Chuan/GaussianAvatar/neuman_dataset'
-subject = 'bike_refit'
+data_folder = '/home/enjhih/Tun-Chuan/GaussianAvatar/sr_dataset/people_snapshot/'
+subject = 'm4c'
 #data_folder = '/home/enjhih/Tun-Chuan/GaussianAvatar/default_dataset/'
 #subject = 'm4c_refit'
 
@@ -74,7 +75,8 @@ else:
     train_list = list(set(range(scene_length)) - set(val_list))
     test_list = val_list[:len(val_list) // 2]
     val_list = val_list[len(val_list) // 2:]
-    train_list = sorted(train_list+test_list+val_list)
+    train_list= sorted(train_list+val_list+test_list)
+    print(train_list)
 
     train_split_name = []
     test_split_name = []
@@ -112,15 +114,13 @@ cam_all['extrinsic'] = extrinsic
 np.savez(join(out_path, 'cam_parms.npz'), **cam_all)
 np.savez(join(test_path, 'cam_parms.npz'), **cam_all)
 
-train_smpl_params = load_smpl_param(join(data_path, "poses_optimized.npz"), train_list)
+train_smpl_params = load_smplx_param(join(data_path, "poses_optimized.npz"), train_list)
 
 torch.save(train_smpl_params ,join(out_path, 'smpl_parms.pth'))
 
-test_smpl_params = load_smpl_param(join(data_path, "poses_optimized.npz"), test_list)
+test_smpl_params = load_smplx_param(join(data_path, "poses_optimized.npz"), test_list)
 
 torch.save(test_smpl_params ,join(test_path, 'smpl_parms.pth'))
-
-print(len(os.listdir(all_image_path)), len(os.listdir(all_mask_apth)))
 
 assert len(os.listdir(all_image_path)) == len(os.listdir(all_mask_apth))
 

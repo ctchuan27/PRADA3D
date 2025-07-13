@@ -84,7 +84,7 @@ class ModelParams(ParamGroup):
 
         # for_test
         self.bullet_pose_list = [112, 217, 755]    # set the specific pose for novel view synthesize
-        self.batch_size = 2
+        self.batch_size = 1
 
         # input uv size and query uv size, 
         self.query_posmap_size= 512
@@ -93,6 +93,9 @@ class ModelParams(ParamGroup):
 
         #####################rm avatar rectification(deformation model) 2025.04.16##################################
         self.deform_on = False
+        self.sr = False
+        self.lhm = False
+        self.downscale_eval = False
         ###########################################################################################################
 
         super().__init__(parser, "Loading Parameters", sentinel)
@@ -125,7 +128,9 @@ class OptimizationParams(ParamGroup):
     def __init__(self, parser):
         self.epochs = 300     # total epochs for training 
         self.position_lr_init = 0.00016
+        #self.position_lr_init = 0.00001
         self.position_lr_final = 0.0000016
+        #self.position_lr_final = 0.0000005
         self.position_lr_delay_mult = 0.01
         self.position_lr_max_steps = self.epochs
         self.feature_lr = 0.0025
@@ -134,10 +139,12 @@ class OptimizationParams(ParamGroup):
         self.rotation_lr = 0.001
         self.percent_dense = 0.01
         self.lambda_dssim = 0.2
-        self.lambda_scale = 3e-2
+        #self.lambda_scale = 3e-2
+        self.lambda_scale = 1e-3
         self.lambda_lpips = 0.2
         self.lambda_aiap = 0.1
-        self.lambda_color = 3e-2
+        #self.lambda_color = 3e-2
+        self.lambda_color = 6e-2
         self.lambda_deform_offset = 0.01
 
         self.lambda_pose = 10
@@ -146,9 +153,13 @@ class OptimizationParams(ParamGroup):
         self.lpips_start_iter = 40
         self.pose_op_start_iter = 1800  #define when to start pose optimization, >epochs means no optimization
         
+        #####################rm avatar rectification(deformation model) 2025.07.03##################################
+        self.deform_start_iter = 100
+        ###########################################################################################################
+        
         self.lr_net = 3e-3
-        self.lr_geomfeat = 5e-4
-
+        #self.lr_geomfeat = 5e-4
+        self.lr_geomfeat = 5e-3
         self.sched_milestones = [int(self.epochs/ 3), int(self.epochs *2/ 3)]
 
 

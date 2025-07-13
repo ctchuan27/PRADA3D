@@ -14,6 +14,8 @@ from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
 import lpips
 from utils.general_utils import to_cuda, adjust_loss_weights
 from utils.loss_utils import l1_loss_w, ssim
+import torchvision.transforms as T
+from torchvision.transforms import InterpolationMode
 
 from torch.cuda.amp import custom_fwd
 class Evaluator(nn.Module):
@@ -67,14 +69,27 @@ def render_sets(model, net, opt, epoch:int):
 
         for idx, batch_data in enumerate(tqdm(test_loader, desc="Rendering progress")):
             batch_data = to_cuda(batch_data, device=torch.device('cuda:0'))
-            gt_image = batch_data['original_image']
+            if model.sr is True:
+                print("Evaluation for super-resolution")
+                gt_image = batch_data['eval_image']
+            else:
+                gt_image = batch_data['original_image']
 
             if model.train_stage == 1:
                 image, mask = avatarmodel.render_free_stage1(batch_data, 59400, 59400)
             else:
                 image, = avatarmodel.render_free_stage2(batch_data, 59400)
 
-            results.append(evaluator(image.unsqueeze(0), gt_image))
+            if model.sr is True:
+                transform = T.Resize((gt_image.shape[2], gt_image.shape[3]))
+                image = transform(image).unsqueeze(0)
+            else:
+                if model.downscale_eval == True:
+                    transform = T.Resize((int(gt_image.shape[2]/2), int(gt_image.shape[3]/2)))
+                    gt_image = transform(gt_image)
+                    image = transform(image)
+                image = image.unsqueeze(0)
+            results.append(evaluator(image, gt_image))
               
             torchvision.utils.save_image(gt_image, os.path.join(gt_path, '{0:05d}'.format(idx) + ".png"))
             torchvision.utils.save_image(image, os.path.join(render_path, '{0:05d}'.format(idx) + ".png"))
@@ -309,6 +324,7 @@ if __name__ == "__main__":
     parser.add_argument("--checkpoint_epochs", nargs="+", type=int, default=[])
     parser.add_argument("--tto", action="store_true")
     parser.add_argument("--tto_steps", default=300, type=int)
+    #parser.add_argument("--sr", action="store_true")
     args = get_combined_args(parser)
     print("Rendering " + args.model_path)
 
