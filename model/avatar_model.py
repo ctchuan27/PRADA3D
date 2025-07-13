@@ -454,13 +454,21 @@ class AvatarModel:
         self.pose_encoder.load_state_dict(pose_encoder_state["pose_encoder"], strict=False)
 
     def getTrainDataloader(self,):
-        return torch.utils.data.DataLoader(self.train_dataset,
+        if self.model_parms.lhm:
+            return torch.utils.data.DataLoader(self.train_dataset,
+                                            batch_size = self.batch_size,
+                                            shuffle = False,
+                                            num_workers = 4,
+                                            worker_init_fn = worker_init_fn,
+                                            drop_last = True)
+        else:
+            return torch.utils.data.DataLoader(self.train_dataset,
                                             batch_size = self.batch_size,
                                             shuffle = True,
                                             num_workers = 4,
                                             worker_init_fn = worker_init_fn,
                                             drop_last = True)
-
+        
     def getTestDataset(self,):
         self.test_dataset = MonoDataset_test(self.model_parms)
         return self.test_dataset
@@ -582,8 +590,24 @@ class AvatarModel:
         pred_scales = pred_scales[:, self.valid_idx, ...].contiguous()
         pred_scales = pred_scales.repeat(1,1,3)
 
-        pred_shs = pred_shs[:, self.valid_idx, ...].contiguous()
+        if iteration < 100000:
+            sh_degree = 0 
+        elif iteration < 120000:
+            sh_degree = 1
+        else:
+            sh_degree = 2
+        sh_basis = (sh_degree + 1) ** 2  # e.g., 4 or 9
+        sh_dim = sh_basis * 3            # e.g., 12 or 27
 
+        # 先裁切成 (B, N, sh_dim)
+        pred_shs = pred_shs[:, :, :sh_dim]
+
+        # 再 reshape 成 (B, N, sh_basis, 3)
+        if sh_degree > 0:
+            pred_shs = pred_shs.view(pred_shs.shape[0], pred_shs.shape[1], sh_basis, 3)
+
+        pred_shs = pred_shs[:, self.valid_idx, ...].contiguous()
+        #print("pred_shs shape: ", pred_shs.shape)
         offset_loss = torch.mean(pred_res ** 2)
         geo_loss = torch.mean(self.geo_feature**2)
         scale_loss = torch.mean(pred_scales)
@@ -652,27 +676,51 @@ class AvatarModel:
             #print("pose shape: ", pose.shape)
             #print("points shape: ", points.shape)
             #print("scales shape: ", scales.shape)
-
-            rendered_images.append(
-                render_batch(
-                    points=points,
-                    shs=None,
-                    colors_precomp=colors,
-                    #rotations=self.fix_rotation,
-                    rotations=rotations,
-                    scales=scales,
-                    opacity=self.fix_opacity,
-                    FovX=FovX,
-                    FovY=FovY,
-                    height=height,
-                    width=width,
-                    bg_color=self.background,
-                    world_view_transform=world_view_transform,
-                    full_proj_transform=full_proj_transform,
-                    active_sh_degree=0,
-                    camera_center=camera_center
+            #colors = colors.view(-1, 9, 3)
+            if sh_degree > 0:
+                rendered_images.append(
+                    render_batch(
+                        points=points,
+                        #shs=None,
+                        #colors_precomp=colors,
+                        shs=colors,
+                        colors_precomp=None,
+                        #rotations=self.fix_rotation,
+                        rotations=rotations,
+                        scales=scales,
+                        opacity=self.fix_opacity,
+                        FovX=FovX,
+                        FovY=FovY,
+                        height=height,
+                        width=width,
+                        bg_color=self.background,
+                        world_view_transform=world_view_transform,
+                        full_proj_transform=full_proj_transform,
+                        #active_sh_degree=0,
+                        active_sh_degree=sh_degree,
+                        camera_center=camera_center
+                    )
                 )
-            )
+            else:
+                rendered_images.append(
+                    render_batch(
+                        points=points,
+                        shs=None,
+                        colors_precomp=colors,
+                        rotations=rotations,
+                        scales=scales,
+                        opacity=self.fix_opacity,
+                        FovX=FovX,
+                        FovY=FovY,
+                        height=height,
+                        width=width,
+                        bg_color=self.background,
+                        world_view_transform=world_view_transform,
+                        full_proj_transform=full_proj_transform,
+                        active_sh_degree=sh_degree,
+                        camera_center=camera_center
+                    )
+                )
         
         if self.deform_on == True:
             #deform_offset_loss = deform_offset_loss / self.batch_size
@@ -1219,7 +1267,7 @@ class AvatarModel:
         else:
             pred_scales = pred_scales.permute([0,2,1])
 
-        pred_scales = pred_scales * 1e-3
+        #pred_scales = pred_scales * 1e-3
 
         pred_shs = pred_shs.permute([0,2,1])
 

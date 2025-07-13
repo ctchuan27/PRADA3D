@@ -35,6 +35,14 @@ class POP_no_unet(nn.Module):
         self.decoder = ShapeDecoder(#in_size=uv_feat_dim + c_geom + 30,
                                     in_size=uv_feat_dim + c_geom,
                                     hsize=hsize, actv_fn='softplus')
+        
+
+        #####################2025.07.06###############################
+        self.geom_fuse_conv_512 = nn.Conv2d(c_geom, c_geom, 3, 1, 1)
+        self.geom_fuse_conv_256 = nn.Conv2d(c_geom, c_geom, 3, 1, 1)
+        self.geom_fuse_conv_128 = nn.Conv2d(c_geom, c_geom, 3, 1, 1)
+        self.geom_fuse_reduce = nn.Conv2d(c_geom * 3, c_geom, 1)
+        #############################################################
 
             
     def forward(self, pose_featmap, geom_featmap, uv_loc, sapiens_feature=None):
@@ -50,6 +58,22 @@ class POP_no_unet(nn.Module):
         # geometric feature tensor
         if self.geom_layer_type is not None:
                 geom_featmap = self.geom_proc_layers(geom_featmap)
+                
+        
+
+        #####################2025.07.06###############################
+        B, C, H, W = geom_featmap.shape  # e.g., [1, 64, 512, 512]
+
+        geo_512 = geom_featmap
+        geo_256 = F.avg_pool2d(geom_featmap, kernel_size=2)    # 256×256
+        geo_128 = F.avg_pool2d(geom_featmap, kernel_size=4)    # 128×128
+
+        feat_512 = F.interpolate(self.geom_fuse_conv_512(geo_512), size=(H, W), mode='bilinear', align_corners=False)
+        feat_256 = F.interpolate(self.geom_fuse_conv_256(geo_256), size=(H, W), mode='bilinear', align_corners=False)
+        feat_128 = F.interpolate(self.geom_fuse_conv_128(geo_128), size=(H, W), mode='bilinear', align_corners=False)
+
+        geom_featmap = self.geom_fuse_reduce(torch.cat([feat_512, feat_256, feat_128], dim=1))  # [B, C, H, W]
+        ################################################################
 
         if  pose_featmap is None:
             # pose and geom features are concatenated to form the feature for each point

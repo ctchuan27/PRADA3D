@@ -521,8 +521,10 @@ class ShapeDecoder(nn.Module):
         self.conv5 = torch.nn.Conv1d(self.hsize+in_size, self.hsize, 1)
         self.conv6 = torch.nn.Conv1d(self.hsize, self.hsize, 1)
         self.conv7 = torch.nn.Conv1d(self.hsize, self.hsize, 1)
+        #self.conv8 = torch.nn.Conv1d(self.hsize, 3, 1)
+        ################2025.07.06 ###########################
         self.conv8 = torch.nn.Conv1d(self.hsize, 3, 1)
-
+        ############################ ###########################
         self.conv6SH = torch.nn.Conv1d(self.hsize, self.hsize, 1)
         self.conv7SH = torch.nn.Conv1d(self.hsize, self.hsize, 1)
         self.conv8SH = torch.nn.Conv1d(self.hsize, 3, 1)
