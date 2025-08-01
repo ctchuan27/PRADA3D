@@ -17,7 +17,7 @@ import torch.nn as nn
 from model.modules  import UnetNoCond5DS
 from model.network import POP_no_unet
 ####################ram_networks criss cross attention######################
-from model.ram_networks.styleunet.styleunet import TriPlane_Conv
+#from model.ram_networks.styleunet.styleunet import TriPlane_Conv
 ############################################################################
 ###################test time optimization######################
 from tqdm import tqdm
@@ -25,9 +25,9 @@ import lpips
 from utils.loss_utils import l1_loss_w, ssim
 ###############################################################
 #####################rm avatar rectification(deformation model) 2025.04.16##################################
-from model.rmavatar_networks.scene.deformation import deform_network
+#from model.rmavatar_networks.scene.deformation import deform_network
 #from model.deformnet import deform_network
-from model.rmavatar_networks.utils.general_utils import get_expon_lr_func
+#from model.rmavatar_networks.utils.general_utils import get_expon_lr_func
 from torch.utils.data import Dataset
 ###########################################################################################
 import math

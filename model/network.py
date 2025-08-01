@@ -60,7 +60,7 @@ class POP_no_unet(nn.Module):
                 geom_featmap = self.geom_proc_layers(geom_featmap)
                 
         
-
+        '''
         #####################2025.07.06###############################
         B, C, H, W = geom_featmap.shape  # e.g., [1, 64, 512, 512]
 
@@ -74,7 +74,8 @@ class POP_no_unet(nn.Module):
 
         geom_featmap = self.geom_fuse_reduce(torch.cat([feat_512, feat_256, feat_128], dim=1))  # [B, C, H, W]
         ################################################################
-
+        '''
+        
         if  pose_featmap is None:
             # pose and geom features are concatenated to form the feature for each point
 
