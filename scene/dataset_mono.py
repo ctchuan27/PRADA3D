@@ -497,7 +497,11 @@ class MonoDataset_novel_pose(Dataset):
         self.scale = 1.0
 
         self.no_mask = bool(self.dataset_parms.no_mask)
-
+        
+        self.name_list = []
+        for index, img in enumerate(sorted(os.listdir(join(self.data_folder, 'images')))):
+            base_name = img.split('.')[0]
+            self.name_list.append((index, base_name))
 
 
         print('loading smpl data ', join(self.data_folder, 'smpl_parms.pth'))
@@ -515,8 +519,8 @@ class MonoDataset_novel_pose(Dataset):
             self.transl_data = self.smpl_data['trans']
             # self.rest_pose_data = self.smpl_data['body_pose'][:self.data_length, 66:]
         
-        print('novel pose shape', self.pose_data.shape)
-        print('novel pose shape', self.transl_data.shape)
+        #print('novel pose shape', self.pose_data.shape)
+        #print('novel pose shape', self.transl_data.shape)
 
         if dataset_parms.cam_static:
             cam_path = join(self.data_folder, 'cam_parms.npz')
@@ -528,7 +532,8 @@ class MonoDataset_novel_pose(Dataset):
             self.R = np.array(extr_npy[:3, :3], np.float32).reshape(3, 3).transpose(1, 0)
             self.T = np.array([extr_npy[:3, 3]], np.float32)
             self.intrinsic = np.array(intr_npy, np.float32).reshape(3, 3)
-        
+            
+        self.image_fix = os.listdir(join(self.data_folder, 'images'))[0].split('.')[-1]
 
         
     def __len__(self):
@@ -541,6 +546,8 @@ class MonoDataset_novel_pose(Dataset):
     def getitem(self, index, ignore_list):
 
         pose_idx  =  index
+        _, name_idx = self.name_list[index]
+        image_path = join(self.data_folder, 'images' ,name_idx + '.' + self.image_fix)
         if self.dataset_parms.train_stage == 2:
             inp_posmap_path = self.data_folder + '/inp_map/' +'inp_posemap_%s_%s.npz'% (str(self.dataset_parms.inp_posmap_size), str(pose_idx).zfill(8))
             inp_posmap = np.load(inp_posmap_path)['posmap' + str(self.dataset_parms.inp_posmap_size)]
@@ -556,7 +563,9 @@ class MonoDataset_novel_pose(Dataset):
         transl_data = self.transl_data[pose_idx]
 
         ##########################can be decide by yourself 2025.05.03################################################
-        width, height = 1080, 1080
+        image = Image.open(image_path)
+        width, height = image.size
+        #width, height = 1080, 1080
         ##############################################################################################################
 
         FovY = focal2fov(focal_length_y, height)
@@ -626,8 +635,8 @@ class MonoDataset_novel_pose_VIBE(Dataset):
             self.transl_data = self.smpl_data['trans']
             # self.rest_pose_data = self.smpl_data['body_pose'][:self.data_length, 66:]
         
-        print('novel pose shape', self.pose_data.shape)
-        print('novel pose shape', self.transl_data.shape)
+        #print('novel pose shape', self.pose_data.shape)
+        #print('novel pose shape', self.transl_data.shape)
         if dataset_parms.cam_static:
             cam_path = join(self.data_folder, 'vibe_cameras.npz')
             cam_npy = np.load(cam_path)
@@ -728,7 +737,7 @@ class ROMP_novel_pose_webcam(Dataset):
         #self.smpl_data = torch.load(join(self.data_folder, 'vibe_output_GS.pth'))
         self.smpl_data = novel_pose
         self.data_length = self.smpl_data['body_pose'].shape[0]
-        print("total pose length", self.data_length)
+        #print("total pose length", self.data_length)
 
         if dataset_parms.smpl_type == 'smplx':
 
@@ -740,8 +749,8 @@ class ROMP_novel_pose_webcam(Dataset):
             self.transl_data = self.smpl_data['trans']
             # self.rest_pose_data = self.smpl_data['body_pose'][:self.data_length, 66:]
         
-        print('novel pose shape', self.pose_data.shape)
-        print('novel pose shape', self.transl_data.shape)
+        #print('novel pose shape', self.pose_data.shape)
+        #print('novel pose shape', self.transl_data.shape)
         #print('trans:', self.transl_data)
         if dataset_parms.cam_static:
             cam_npy = camera_parameters
@@ -826,7 +835,8 @@ class MonoDataset_novel_view(Dataset):
 
         self.dataset_parms = dataset_parms
 
-        self.data_folder = join(dataset_parms.source_path, 'test')
+        #self.data_folder = join(dataset_parms.source_path, 'test')
+        self.data_folder = join(os.getcwd(), 'demo/rotation')
         self.device = device
         self.gender = self.dataset_parms.smpl_gender
 
@@ -846,7 +856,7 @@ class MonoDataset_novel_view(Dataset):
             self.smpl_data = torch.load(join(self.data_folder, 'smpl_parms_pred.pth'))
 
         #self.data_length = len(os.listdir(join(self.data_folder, 'images')))
-        self.data_length = 180
+        self.data_length = 120
         
         self.name_list = []
         for index, img in enumerate(sorted(os.listdir(join(self.data_folder, 'images')))):
@@ -858,7 +868,7 @@ class MonoDataset_novel_view(Dataset):
         if not dataset_parms.no_mask:
             self.mask_fix = os.listdir(join(self.data_folder, 'masks'))[0].split('.')[-1]
 
-        print("total pose length", self.data_length )
+        #print("total pose length", self.data_length )
 
 
         if dataset_parms.smpl_type == 'smplx':
