@@ -61,7 +61,7 @@ class ModelParams(ParamGroup):
         # smpl and smplx model path
         self.smpl_model_path = os.getcwd() + '/assets/smpl_files/smpl'
         self.smplx_model_path = os.getcwd() + '/assets/smpl_files/smplx'
-        self.test_folder = os.getcwd() + '/assets/test_pose_v2'
+        self.test_folder = os.getcwd() + '/assets/test_pose'
         
         
 

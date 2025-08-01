@@ -180,7 +180,8 @@ except ImportError:
     TENSORBOARD_FOUND = False
 
 def train(model, net, opt, saving_epochs, checkpoint_epochs):
-    pose_indices_to_log = [30, 60, 90]  # 自行指定想看的動作索引
+    #pose_indices_to_log = [30, 60, 90]  # 自行指定想看的動作索引
+    pose_indices_to_log = [30, 80, 130, 180, 230, 280, 330]  # 自行指定想看的動作索引
     log_interval_epoch = 30  # 每幾個 epoch 存一次
 
     save_vis_dir = os.path.join(model.model_path, 'log_epoch_vis')
@@ -349,7 +350,7 @@ def train(model, net, opt, saving_epochs, checkpoint_epochs):
                     save_path = os.path.join(save_vis_dir, f"epoch{epoch:03d}_pose{i}.png")
                     torchvision.utils.save_image(vis_grid, save_path)                
                 '''
-                if epoch > 100 and epoch % log_interval_epoch == 0:
+                if epoch > 20 and epoch % log_interval_epoch == 0:
                     pose_indices = batch_data['pose_idx']
                     for pid in pose_indices_to_log:
                         match_idx = (pose_indices == pid).nonzero(as_tuple=True)[0]
@@ -439,7 +440,7 @@ if __name__ == "__main__":
     np = NetworkParams(parser)
     parser.add_argument('--debug_from', type=int, default=-1)
     parser.add_argument('--detect_anomaly', action='store_true', default=False)
-    parser.add_argument("--save_epochs", nargs="+", type=int, default=[150])
+    parser.add_argument("--save_epochs", nargs="+", type=int, default=[100])
     parser.add_argument("--quiet", action="store_true")
     parser.add_argument("--checkpoint_epochs", nargs="+", type=int, default=[])
     parser.add_argument("--start_checkpoint", type=str, default = None)

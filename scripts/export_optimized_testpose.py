@@ -15,7 +15,7 @@ def export_pose_and_transl(net_path, smpl_parms_path, output_path):
     _ = torch.load(join(smpl_parms_path, 'smpl_parms.pth'))
 
     # Setup Embedding model
-    num_training_frames = len(os.listdir(join(smpl_parms_path, 'raw_images')))
+    num_training_frames = len(os.listdir(join(smpl_parms_path, 'images')))
     pose = torch.nn.Embedding(num_training_frames, 72, sparse=True).cuda()
     transl = torch.nn.Embedding(num_training_frames, 3, sparse=True).cuda()
 
