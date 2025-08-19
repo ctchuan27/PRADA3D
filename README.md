@@ -1,86 +1,59 @@
 <div align="center">
 
-# <b>GaussianAvatar</b>: Towards Realistic Human Avatar Modeling from a Single Video via Animatable 3D Gaussians
-
-[Liangxiao Hu](https://huliangxiao.github.io/)<sup>1,&dagger;</sup>, [Hongwen Zhang](https://zhanghongwen.cn/)<sup>2</sup>, [Yuxiang Zhang](https://zhangyux15.github.io/)<sup>3</sup>, [Boyao Zhou](https://morpheo.inrialpes.fr/people/zhou/)<sup>3</sup>, [Boning Liu](https://liuboning2.github.io/)<sup>3</sup>, [Shengping Zhang](http://homepage.hit.edu.cn/zhangshengping)<sup>1,*</sup>, [Liqiang Nie](https://liqiangnie.github.io/)<sup>1</sup>,
-
-<sup>1</sup>Harbin Institute of Technology <sup>2</sup>Beijing Normal University <sup>3</sup>Tsinghua University
-
-<sup>*</sup>Corresponding author <sup>&nbsp;&nbsp;&nbsp;&dagger;</sup>Work done during an internship at Tsinghua University
-
-### [Projectpage](https://huliangxiao.github.io/GaussianAvatar) · [Paper](https://arxiv.org/abs/2312.02134) · [Video](https://www.youtube.com/watch?v=a4g8Z9nCF-k)
+# <b>PRADA3D</b>: Photorealistic and Real-Time Animatable 3D Gaussian Avatar Reconstruction with Deformation Distillation and Dual Rectification
 
 </div>
 
-## :mega: Updates
-[4/3/2024] The pretrained models for the other three people from People Snapshot are released on OneDrive.
-
-[7/2/2024] The scripts for your own video are released.
-
-[23/1/2024] Training and inference codes for People Snapshot are released.
-
-## Introduction
-
-We present GaussianAvatar, an efficient approach to creating realistic human avatars with dynamic 3D appearances from a single video. 
-
-![](live_demo/gaussianavatar.gif)
-
-
-## Installation
-
-To deploy and run GaussianAvatar, run the following scripts:
-```
+## 環境建置
+建立環境並安裝套件：
+```bash
 conda env create --file environment.yml
 conda activate gs-avatar
 ```
+接著依照 [3DGS](https://github.com/graphdeco-inria/gaussian-splatting) 的指引，編譯以下模組： `diff-gaussian-rasterization` 與 `simple-knn`。
 
-Then, compile ```diff-gaussian-rasterization``` and ```simple-knn``` as in [3DGS](https://github.com/graphdeco-inria/gaussian-splatting) repository.
-
-## Download models and data 
-
-- SMPL/SMPL-X model: register and download [SMPL](https://smpl.is.tue.mpg.de/) and [SMPL-X](https://smpl-x.is.tue.mpg.de/), and put these files in ```assets/smpl_files```. The folder should have the following structure:
+## 下載模型與資料 
+SMPL/SMPL-X 模型：請先註冊並下載 [SMPL](https://smpl.is.tue.mpg.de/) 與 [SMPL-X](https://smpl-x.is.tue.mpg.de/)，並放置於 `assets/smpl_files`。資料夾結構如下：
 ```
 smpl_files
  └── smpl
-   ├── SMPL_FEMALE.pkl
-   ├── SMPL_MALE.pkl
-   └── SMPL_NEUTRAL.pkl
+   ├── SMPL_FEMALE.pkl
+   ├── SMPL_MALE.pkl
+   └── SMPL_NEUTRAL.pkl
  └── smplx
-   ├── SMPLX_FEMALE.npz
-   ├── SMPLX_MALE.npz
-   └── SMPLX_NEUTRAL.npz
+   ├── SMPLX_FEMALE.npz
+   ├── SMPLX_MALE.npz
+   └── SMPLX_NEUTRAL.npz
 ```
 
-- Data: download the provided data from [OneDrive](https://hiteducn0-my.sharepoint.com/:f:/g/personal/lx_hu_hit_edu_cn/EsGcL5JGKhVGnaAtJ-rb1sQBR4MwkdJ9EWqJBIdd2mpi2w?e=KnloBM). These data include ```assets.zip```, ```gs_data.zip``` and ```pretrained_models.zip```. Please unzip ```assets.zip``` to the corresponding folder in the repository and unzip others to `gs_data_path` and `pretrained_models_path`.
+資料集與模型檔：請從 [OneDrive](https://hiteducn0-my.sharepoint.com/:f:/g/personal/lx_hu_hit_edu_cn/EsGcL5JGKhVGnaAtJ-rb1sQBR4MwkdJ9EWqJBIdd2mpi2w?e=KnloBM) 下載 `assets.zip`、`gs_data.zip` 與 `pretrained_models.zip`。將 `assets.zip` 解壓縮至專案對應資料夾，`gs_data.zip` 解壓縮至 `$gs_data_path`，`pretrained_models.zip` 解壓縮至 `$pretrained_models_path`。
 
+## 在 People Snapshot 資料集上執行
+以 `m4c_processed` 為例。  
 
-## Run on People Snapshot dataset
-
-We take the subject `m4c_processed` for example. 
-
-### Training
-
-```
+訓練：
+```bash
 python train.py -s $gs_data_path/m4c_processed -m output/m4c_processed --train_stage 1
 ```
 
-### Evaluation
-
-```
+評估：
+```bash
 python eval.py -s $gs_data_path/m4c_processed -m output/m4c_processed --epoch 200
 ```
 
-### Rendering novel pose
-
-```
+渲染新姿勢：
+```bash
 python render_novel_pose.py -s $gs_data_path/m4c_processed -m output/m4c_processed --epoch 200
 ```
 
-## Run on Your Own Video
+## 使用自訂影片資料
 
-### Preprocessing
-
-- masks and poses: use the bash script `scripts/custom/process-sequence.sh` in [InstantAvatar](https://github.com/tijiang13/InstantAvatar). The data folder should have the followings:
+### 前處理
+遮罩與姿勢檔：使用 [InstantAvatar](https://github.com/tijiang13/InstantAvatar) 提供的腳本：
+```bash
+scripts/custom/process-sequence.sh
+```
+資料夾結構應如下：
 ```
 smpl_files
  ├── images
@@ -88,58 +61,46 @@ smpl_files
  ├── cameras.npz
  └── poses_optimized.npz
 ```
-- data format: we provide a script to convert the pose format of romp to ours (remember to change the `path` in L50 and L51):
-```
+
+轉換 ROMP 姿勢格式（需修改第 50、51 行路徑）：
+```bash
 cd scripts & python sample_romp2gsavatar.py
 ```
-- position map of the canonical pose: (remember to change the corresponding `path`)
-```
+
+生成標準姿勢的 position map（需修改對應路徑）：
+```bash
 python gen_pose_map_cano_smpl.py
 ```
 
-### Training for Stage 1
-
+### Stage 1 訓練
+```bash
+cd .. & python train.py -s $path_to_data/$subject -m output/{$subject}_stage1 --train_stage 1 --pose_op_start_iter 10
 ```
-cd .. &  python train.py -s $path_to_data/$subject -m output/{$subject}_stage1 --train_stage 1 --pose_op_start_iter 10
-```
 
-### Training for Stage 2
-
-- export predicted smpl:
-```
+### Stage 2 訓練
+匯出預測 SMPL：
+```bash
 cd scripts & python export_stage_1_smpl.py
 ```
-- visualize the optimized smpl (optional):
-```
+
+視覺化優化後的 SMPL（可選）：
+```bash
 python render_pred_smpl.py
 ```
-- generate the predicted position map:
-```
+
+生成預測的 position map：
+```bash
 python gen_pose_map_our_smpl.py
 ```
-- start to train
-```
-cd .. &  python train.py -s $path_to_data/$subject -m output/{$subject}_stage2 --train_stage 2 --stage1_out_path $path_to_stage1_net_save_path
-```
 
-## Todo
-
-- [x] Release the reorganized code and data.
-- [x] Provide the scripts for your own video.
-- [ ] Provide the code for real-time annimation. 
-
-## Citation
-
-If you find this code useful for your research, please consider citing:
-```bibtex
-@inproceedings{hu2024gaussianavatar,
-        title={GaussianAvatar: Towards Realistic Human Avatar Modeling from a Single Video via Animatable 3D Gaussians},
-        author={Hu, Liangxiao and Zhang, Hongwen and Zhang, Yuxiang and Zhou, Boyao and Liu, Boning and Zhang, Shengping and Nie, Liqiang},
-        booktitle={IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
-        year={2024}
-}
+開始 Stage 2 訓練：
+```bash
+cd .. & python train.py -s $path_to_data/$subject -m output/{$subject}_stage2 --train_stage 2 --stage1_out_path $path_to_stage1_net_save_path
 ```
 
-## Acknowledgements
-
-This project is built on source codes shared by [Gaussian-Splatting](https://github.com/graphdeco-inria/gaussian-splatting), [POP](https://github.com/qianlim/POP), [HumanNeRF](https://github.com/chungyiweng/humannerf) and [InstantAvatar](https://github.com/tijiang13/InstantAvatar).
+## 致謝
+本專案建立於以下開源程式碼基礎上：  
+- [Gaussian-Splatting](https://github.com/graphdeco-inria/gaussian-splatting)  
+- [POP](https://github.com/qianlim/POP)  
+- [HumanNeRF](https://github.com/chungyiweng/humannerf)  
+- [InstantAvatar](https://github.com/tijiang13/InstantAvatar)  
