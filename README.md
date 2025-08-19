@@ -62,56 +62,7 @@ PRADA3D
 
 ---
 
-## 在 People Snapshot 資料集上執行
-以 `m4c_processed` 為例。  
-
-訓練：
-```bash
-python train.py -s $gs_data_path/m4c_processed -m output/m4c_processed --train_stage 1
-```
-
-評估：
-```bash
-python eval.py -s $gs_data_path/m4c_processed -m output/m4c_processed --epoch 200
-```
-
-渲染新姿勢：
-```bash
-python render_novel_pose.py -s $gs_data_path/m4c_processed -m output/m4c_processed --epoch 200
-```
-
----
-
-## 使用自訂影片資料
-
-### 前處理
-使用 [InstantAvatar](https://github.com/tijiang13/InstantAvatar) 提供的腳本產生遮罩與姿勢檔：
-```bash
-scripts/custom/process-sequence.sh
-```
-
-資料夾結構應如下：
-```
-custom_data
- ├── images
- ├── masks
- ├── cameras.npz
- └── poses_optimized.npz
-```
-
-轉換 ROMP 姿勢格式（需修改第 50、51 行路徑）：
-```bash
-cd scripts & python sample_romp2gsavatar.py
-```
-
-生成標準姿勢的 position map（需修改對應路徑）：
-```bash
-python gen_pose_map_cano_smpl.py
-```
-
----
-
-## 通用訓練指令模板與範例
+## 訓練指令
 
 通用模板（自行修改 -s 與 -m）
 
@@ -129,6 +80,7 @@ python train.py \
 
 使用 LHM（NPDD）請加： --lhm
 
+## 訓練指令範例
 
 People Snapshot dataset（with LHM / NPDD）
 
@@ -184,3 +136,33 @@ Subject: 資工同學（student_4）
 ```bash
 python train.py -s ./custom_dataset/student_4 -m output/custom/student_4/v1_0.0008 --train_stage 1 --epoch 300 --smpl_type smpl --pose_op_start_iter 10 --lpips_start_iter 30 --position_lr_init 0.0008
 ```
+
+
+## 使用自訂影片資料
+
+### 前處理
+使用 [InstantAvatar](https://github.com/tijiang13/InstantAvatar) 提供的腳本產生遮罩與姿勢檔：
+```bash
+scripts/custom/process-sequence.sh
+```
+
+資料夾結構應如下：
+```
+custom_data
+ ├── images
+ ├── masks
+ ├── cameras.npz
+ └── poses_optimized.npz
+```
+
+轉換 ROMP 姿勢格式（需修改第 50、51 行路徑）：
+```bash
+cd scripts & python sample_romp2gsavatar.py
+```
+
+生成標準姿勢的 position map（需修改對應路徑）：
+```bash
+python gen_pose_map_cano_smpl.py
+```
+
+
