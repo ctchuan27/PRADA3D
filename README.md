@@ -111,34 +111,64 @@ python gen_pose_map_cano_smpl.py
 
 ---
 
-### Stage 1 訓練
-```bash
-cd .. & python train.py -s $path_to_data/$subject -m output/{$subject}_stage1 --train_stage 1 --pose_op_start_iter 10
-```
+## 通用訓練指令模板與範例
 
-### Stage 2 訓練
-匯出預測 SMPL：
-```bash
-cd scripts & python export_stage_1_smpl.py
-```
+````bash
+# =========================
+# =========================
+# 通用模板（自行修改 -s 與 -m）
+# =========================
+python train.py \
+    -s <path_to_dataset>/<subject_folder> \
+    -m output/<category>/<subject_name>/<exp_name> \
+    --train_stage 1 \
+    --epoch 300 \
+    --smpl_type smpl \
+    --pose_op_start_iter 10 \
+    --lpips_start_iter 30 \
+    --position_lr_init 0.0008
+# 使用 LHM（NPDD）請加： --lhm
 
-視覺化優化後的 SMPL（可選）：
-```bash
-python render_pred_smpl.py
-```
 
-生成預測的 position map：
-```bash
-python gen_pose_map_our_smpl.py
-```
+# =========================
+# People Snapshot dataset（with LHM / NPDD）
+# =========================
+# Subject: m3c
+python train.py -s lhm_dataset/people_snapshot_v2/m3c_processed -m output/lhm/people_snapshot/m3c_v4_0.0008 --train_stage 1 --epoch 300 --smpl_type smpl --lpips_start_iter 30 --pose_op_start_iter 10 --lhm --position_lr_init 0.0008
+# Subject: m4c
+python train.py -s lhm_dataset/people_snapshot_v2/m4c_processed -m output/lhm/people_snapshot/m4c_v4_0.0008 --train_stage 1 --epoch 300 --smpl_type smpl --lpips_start_iter 30 --pose_op_start_iter 10 --lhm --position_lr_init 0.0008
+# Subject: f3c
+python train.py -s lhm_dataset/people_snapshot_v2/f3c_processed -m output/lhm/people_snapshot/f3c_v4_0.0008 --train_stage 1 --epoch 300 --smpl_type smpl --lpips_start_iter 30 --pose_op_start_iter 10 --lhm --position_lr_init 0.0008
+# Subject: f4c
+python train.py -s lhm_dataset/people_snapshot_v2/f4c_processed -m output/lhm/people_snapshot/f4c_v4_0.0008 --train_stage 1 --epoch 300 --smpl_type smpl --lpips_start_iter 30 --pose_op_start_iter 10 --lhm --position_lr_init 0.0008
 
-開始 Stage 2 訓練：
-```bash
-cd .. & python train.py -s $path_to_data/$subject -m output/{$subject}_stage2 --train_stage 2 --stage1_out_path $path_to_stage1_net_save_path
-```
 
----
+# =========================
+# Custom dataset（每個 subject 都有「名字」標示）
+# =========================
+# Subject: 傅老師
+python train.py -s ./custom_dataset/fu -m output/custom/fu/v2_0.0008 --train_stage 1 --epoch 300 --smpl_type smpl --pose_op_start_iter 10 --lpips_start_iter 30 --position_lr_init 0.0008
 
-## 致謝
-本專案建立於以下開源程式碼基礎上：  
-- [Gaussian-Splatting](https://github.com/graphdeco-inria/gaussian-splatting)  
+# Subject: 墩權（帽踢）
+python train.py -s ./custom_dataset/tunchuan/hoodie_v2 -m output/custom/tunchuan/hoodie_cut/v1_0.0008 --train_stage 1 --epoch 300 --smpl_type smpl --pose_op_start_iter 10 --lpips_start_iter 30 --position_lr_init 0.0008
+
+# Subject: 墩權（條紋長袖）
+python train.py -s ./custom_dataset/tunchuan/stripe_v2 -m output/custom/tunchuan/stripe_cut/v1_0.0008 --train_stage 1 --epoch 300 --smpl_type smpl --pose_op_start_iter 10 --lpips_start_iter 30 --position_lr_init 0.0008
+
+# Subject: 鳳儀
+python train.py -s ./custom_dataset/fengyi/fengyi_alldown/origres -m output/custom/fengyi/fengyi_alldown/origres/v1_0.0008 --train_stage 1 --epoch 300 --smpl_type smpl --pose_op_start_iter 10 --lpips_start_iter 30 --position_lr_init 0.0008
+
+# Subject: 靜睿
+python train.py -s ./custom_dataset/jingrei -m output/custom/jingrei/v1_0.0008 --train_stage 1 --epoch 300 --smpl_type smpl --pose_op_start_iter 10 --lpips_start_iter 30 --position_lr_init 0.0008
+
+# Subject: 詩婷
+python train.py -s ./custom_dataset/shitin -m output/custom/shitin/v1_0.0008 --train_stage 1 --epoch 300 --smpl_type smpl --pose_op_start_iter 10 --lpips_start_iter 30 --position_lr_init 0.0008
+
+# Subject: 婷安
+python train.py -s ./custom_dataset/tingan -m output/custom/tingan/v1_0.0008 --train_stage 1 --epoch 300 --smpl_type smpl --pose_op_start_iter 10 --lpips_start_iter 30 --position_lr_init 0.0008
+
+# Subject: 資工同學（student_1）
+python train.py -s ./custom_dataset/student_1 -m output/custom/student_1/v1_0.0008 --train_stage 1 --epoch 300 --smpl_type smpl --pose_op_start_iter 10 --lpips_start_iter 30 --position_lr_init 0.0008
+
+# Subject: 資工同學（student_4）
+python train.py -s ./custom_dataset/student_4 -m output/custom/student_4/v1_0.0008 --train_stage 1 --epoch 300 --smpl_type smpl --pose_op_start_iter 10 --lpips_start_iter 30 --position_lr_init 0.0008
