@@ -20,7 +20,7 @@ conda env create --file environment.yml
 conda activate PRADA3D
 ```
 接著編譯3DGS必要模組： `diff-gaussian-rasterization` 與 `simple-knn`:
-```
+```bash
 git clone https://github.com/jkulhanek/fork-diff-gaussian-rasterization.git
 (將fork-diff-gaussian-rasterizatione改名為但指令我不會diff-gaussian-rasterization)
 pip install diff-gaussian-rasterization
@@ -29,20 +29,26 @@ pip install simple-knn
 要注意和原版3DGS不同，這邊使用能分割背景的diff-gaussian-rasterization，使用說明參考:https://github.com/graphdeco-inria/gaussian-splatting/issues/542
 
 ## 下載模型與資料 
-SMPL/SMPL-X 模型：請先註冊並下載 [SMPL](https://smpl.is.tue.mpg.de/) 與 [SMPL-X](https://smpl-x.is.tue.mpg.de/)，並放置於 `assets/smpl_files`。資料夾結構如下：
-```
-smpl_files
- └── smpl
-   ├── SMPL_FEMALE.pkl
-   ├── SMPL_MALE.pkl
-   └── SMPL_NEUTRAL.pkl
- └── smplx
-   ├── SMPLX_FEMALE.npz
-   ├── SMPLX_MALE.npz
-   └── SMPLX_NEUTRAL.npz
-```
+SMPL/SMPL-X 模型：請先註冊並下載 [SMPL](https://smpl.is.tue.mpg.de/) 與 [SMPL-X](https://smpl-x.is.tue.mpg.de/)，並放置於 `assets/smpl_files`。
 
-資料集與模型檔：請從 [OneDrive](https://hiteducn0-my.sharepoint.com/:f:/g/personal/lx_hu_hit_edu_cn/EsGcL5JGKhVGnaAtJ-rb1sQBR4MwkdJ9EWqJBIdd2mpi2w?e=KnloBM) 下載 `assets.zip`、`gs_data.zip` 與 `pretrained_models.zip`。將 `assets.zip` 解壓縮至專案對應資料夾，`gs_data.zip` 解壓縮至 `$gs_data_path`，`pretrained_models.zip` 解壓縮至 `$pretrained_models_path`。
+資料集與模型檔：請從 [OneDrive](https://hiteducn0-my.sharepoint.com/:f:/g/personal/lx_hu_hit_edu_cn/EsGcL5JGKhVGnaAtJ-rb1sQBR4MwkdJ9EWqJBIdd2mpi2w?e=KnloBM) 下載 `assets.zip`、`gs_data.zip` 與 `pretrained_models.zip`。將 `assets.zip` 解壓縮至專案對應資料夾，`gs_data.zip` 解壓縮至 `dataset`，`pretrained_models.zip` 解壓縮至 `output`。
+
+資料夾結構如下：
+```
+PRADA3D
+ └──assets
+     └── smpl_files
+           └── smpl
+             ├── SMPL_FEMALE.pkl
+             ├── SMPL_MALE.pkl
+             └── SMPL_NEUTRAL.pkl
+           └── smplx
+             ├── SMPLX_FEMALE.npz
+             ├── SMPLX_MALE.npz
+             └── SMPLX_NEUTRAL.npz
+ └──dataset
+ └──output
+```
 
 ## 在 People Snapshot 資料集上執行
 以 `m4c_processed` 為例。  
@@ -71,7 +77,7 @@ scripts/custom/process-sequence.sh
 ```
 資料夾結構應如下：
 ```
-smpl_files
+custom_data
  ├── images
  ├── masks
  ├── cameras.npz
