@@ -5,50 +5,62 @@
 </div>
 
 ## 環境建置
-首先到達想要的資料夾，ex:
-```
+首先進入想要的資料夾，例如：
+```bash
 cd Tun-Chuan
 ```
-下載PRADA3D的github並進入資料夾:
-```
+
+下載 PRADA3D 的 GitHub 並進入資料夾：
+```bash
 git clone https://github.com/ctchuan27/PRADA3D.git
 cd PRADA3D
 ```
+
 建立環境並安裝套件：
 ```bash
 conda env create --file environment.yml
 conda activate PRADA3D
 ```
-接著編譯3DGS必要模組： `diff-gaussian-rasterization` 與 `simple-knn`:
+
+編譯 3DGS 必要模組：`diff-gaussian-rasterization` 與 `simple-knn`：
 ```bash
 git clone https://github.com/jkulhanek/fork-diff-gaussian-rasterization.git
-(將fork-diff-gaussian-rasterizatione改名為但指令我不會diff-gaussian-rasterization)
+mv fork-diff-gaussian-rasterization diff-gaussian-rasterization
 pip install diff-gaussian-rasterization
 pip install simple-knn
 ```
-要注意和原版3DGS不同，這邊使用能分割背景的diff-gaussian-rasterization，使用說明參考:https://github.com/graphdeco-inria/gaussian-splatting/issues/542
+
+⚠️ 注意：這裡使用的是可分割背景的 fork 版本 `diff-gaussian-rasterization`，不同於原版 3DGS。更多說明請參考：  
+https://github.com/graphdeco-inria/gaussian-splatting/issues/542
+
+---
 
 ## 下載模型與資料 
-SMPL/SMPL-X 模型：請先註冊並下載 [SMPL](https://smpl.is.tue.mpg.de/) 與 [SMPL-X](https://smpl-x.is.tue.mpg.de/)，並放置於 `assets/smpl_files`。
+- **SMPL/SMPL-X 模型**：請先註冊並下載 [SMPL](https://smpl.is.tue.mpg.de/) 與 [SMPL-X](https://smpl-x.is.tue.mpg.de/)，並放置於 `assets/smpl_files`。  
 
-資料集與模型檔：請從 [OneDrive](https://hiteducn0-my.sharepoint.com/:f:/g/personal/lx_hu_hit_edu_cn/EsGcL5JGKhVGnaAtJ-rb1sQBR4MwkdJ9EWqJBIdd2mpi2w?e=KnloBM) 下載 `assets.zip`、`gs_data.zip` 與 `pretrained_models.zip`。將 `assets.zip` 解壓縮至專案對應資料夾，`gs_data.zip` 解壓縮至 `dataset`，`pretrained_models.zip` 解壓縮至 `output`。
+- **資料集與模型檔**：請從 [OneDrive](https://hiteducn0-my.sharepoint.com/:f:/g/personal/lx_hu_hit_edu_cn/EsGcL5JGKhVGnaAtJ-rb1sQBR4MwkdJ9EWqJBIdd2mpi2w?e=KnloBM) 下載 `assets.zip`、`gs_data.zip` 與 `pretrained_models.zip`。  
+  - `assets.zip` → 解壓縮至專案內對應資料夾  
+  - `gs_data.zip` → 解壓縮至 `dataset`  
+  - `pretrained_models.zip` → 解壓縮至 `output`  
 
 資料夾結構如下：
 ```
 PRADA3D
- └──assets
+ └── assets
      └── smpl_files
            └── smpl
-             ├── SMPL_FEMALE.pkl
-             ├── SMPL_MALE.pkl
-             └── SMPL_NEUTRAL.pkl
+               ├── SMPL_FEMALE.pkl
+               ├── SMPL_MALE.pkl
+               └── SMPL_NEUTRAL.pkl
            └── smplx
-             ├── SMPLX_FEMALE.npz
-             ├── SMPLX_MALE.npz
-             └── SMPLX_NEUTRAL.npz
- └──dataset
- └──output
+               ├── SMPLX_FEMALE.npz
+               ├── SMPLX_MALE.npz
+               └── SMPLX_NEUTRAL.npz
+ └── dataset
+ └── output
 ```
+
+---
 
 ## 在 People Snapshot 資料集上執行
 以 `m4c_processed` 為例。  
@@ -68,13 +80,16 @@ python eval.py -s $gs_data_path/m4c_processed -m output/m4c_processed --epoch 20
 python render_novel_pose.py -s $gs_data_path/m4c_processed -m output/m4c_processed --epoch 200
 ```
 
+---
+
 ## 使用自訂影片資料
 
 ### 前處理
-遮罩與姿勢檔：使用 [InstantAvatar](https://github.com/tijiang13/InstantAvatar) 提供的腳本：
+使用 [InstantAvatar](https://github.com/tijiang13/InstantAvatar) 提供的腳本產生遮罩與姿勢檔：
 ```bash
 scripts/custom/process-sequence.sh
 ```
+
 資料夾結構應如下：
 ```
 custom_data
@@ -93,6 +108,8 @@ cd scripts & python sample_romp2gsavatar.py
 ```bash
 python gen_pose_map_cano_smpl.py
 ```
+
+---
 
 ### Stage 1 訓練
 ```bash
@@ -120,9 +137,8 @@ python gen_pose_map_our_smpl.py
 cd .. & python train.py -s $path_to_data/$subject -m output/{$subject}_stage2 --train_stage 2 --stage1_out_path $path_to_stage1_net_save_path
 ```
 
+---
+
 ## 致謝
 本專案建立於以下開源程式碼基礎上：  
 - [Gaussian-Splatting](https://github.com/graphdeco-inria/gaussian-splatting)  
-- [POP](https://github.com/qianlim/POP)  
-- [HumanNeRF](https://github.com/chungyiweng/humannerf)  
-- [InstantAvatar](https://github.com/tijiang13/InstantAvatar)  
