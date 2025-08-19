@@ -113,11 +113,8 @@ python gen_pose_map_cano_smpl.py
 
 ## 通用訓練指令模板與範例
 
+通用模板（自行修改 -s 與 -m）
 
-# =========================
-# =========================
-# 通用模板（自行修改 -s 與 -m）
-# =========================
 ```bash
 python train.py \
     -s <path_to_dataset>/<subject_folder> \
@@ -129,14 +126,14 @@ python train.py \
     --lpips_start_iter 30 \
     --position_lr_init 0.0008
 ```
-# 使用 LHM（NPDD）請加： --lhm
+
+使用 LHM（NPDD）請加： --lhm
 
 
-# =========================
-# People Snapshot dataset（with LHM / NPDD）
-# =========================
-# Subject: m3c
+People Snapshot dataset（with LHM / NPDD）
+
 ```bash
+# Subject: m3c
 python train.py -s lhm_dataset/people_snapshot_v2/m3c_processed -m output/lhm/people_snapshot/m3c_v4_0.0008 --train_stage 1 --epoch 300 --smpl_type smpl --lpips_start_iter 30 --pose_op_start_iter 10 --lhm --position_lr_init 0.0008
 
 # Subject: m4c
@@ -149,42 +146,41 @@ python train.py -s lhm_dataset/people_snapshot_v2/f3c_processed -m output/lhm/pe
 python train.py -s lhm_dataset/people_snapshot_v2/f4c_processed -m output/lhm/people_snapshot/f4c_v4_0.0008 --train_stage 1 --epoch 300 --smpl_type smpl --lpips_start_iter 30 --pose_op_start_iter 10 --lhm --position_lr_init 0.0008
 ```
 
-# =========================
-# Custom dataset（每個 subject 都有「名字」標示）
-# =========================
-# Subject: 傅老師
+Custom dataset:
+
+Subject: 傅老師
 ```bash
 python train.py -s ./custom_dataset/fu -m output/custom/fu/v2_0.0008 --train_stage 1 --epoch 300 --smpl_type smpl --pose_op_start_iter 10 --lpips_start_iter 30 --position_lr_init 0.0008
 ```
-# Subject: 墩權（帽踢）
+Subject: 墩權（帽踢）
 ```bash
 python train.py -s ./custom_dataset/tunchuan/hoodie_v2 -m output/custom/tunchuan/hoodie_cut/v1_0.0008 --train_stage 1 --epoch 300 --smpl_type smpl --pose_op_start_iter 10 --lpips_start_iter 30 --position_lr_init 0.0008
 ```
-# Subject: 墩權（條紋長袖）
+Subject: 墩權（條紋長袖）
 ```bash
 python train.py -s ./custom_dataset/tunchuan/stripe_v2 -m output/custom/tunchuan/stripe_cut/v1_0.0008 --train_stage 1 --epoch 300 --smpl_type smpl --pose_op_start_iter 10 --lpips_start_iter 30 --position_lr_init 0.0008
 ```
-# Subject: 鳳儀
+Subject: 鳳儀
 ```bash
 python train.py -s ./custom_dataset/fengyi/fengyi_alldown/origres -m output/custom/fengyi/fengyi_alldown/origres/v1_0.0008 --train_stage 1 --epoch 300 --smpl_type smpl --pose_op_start_iter 10 --lpips_start_iter 30 --position_lr_init 0.0008
 ```
-# Subject: 靜睿
+Subject: 靜睿
 ```bash
 python train.py -s ./custom_dataset/jingrei -m output/custom/jingrei/v1_0.0008 --train_stage 1 --epoch 300 --smpl_type smpl --pose_op_start_iter 10 --lpips_start_iter 30 --position_lr_init 0.0008
 ```
-# Subject: 詩婷
+Subject: 詩婷
 ```bash
 python train.py -s ./custom_dataset/shitin -m output/custom/shitin/v1_0.0008 --train_stage 1 --epoch 300 --smpl_type smpl --pose_op_start_iter 10 --lpips_start_iter 30 --position_lr_init 0.0008
 ```
-# Subject: 婷安
+Subject: 婷安
 ```bash
 python train.py -s ./custom_dataset/tingan -m output/custom/tingan/v1_0.0008 --train_stage 1 --epoch 300 --smpl_type smpl --pose_op_start_iter 10 --lpips_start_iter 30 --position_lr_init 0.0008
 ```
-# Subject: 資工同學（student_1）
+Subject: 資工同學（student_1）
 ```bash
 python train.py -s ./custom_dataset/student_1 -m output/custom/student_1/v1_0.0008 --train_stage 1 --epoch 300 --smpl_type smpl --pose_op_start_iter 10 --lpips_start_iter 30 --position_lr_init 0.0008
 ```
-# Subject: 資工同學（student_4）
+Subject: 資工同學（student_4）
 ```bash
 python train.py -s ./custom_dataset/student_4 -m output/custom/student_4/v1_0.0008 --train_stage 1 --epoch 300 --smpl_type smpl --pose_op_start_iter 10 --lpips_start_iter 30 --position_lr_init 0.0008
 ```
