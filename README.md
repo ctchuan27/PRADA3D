@@ -5,12 +5,28 @@
 </div>
 
 ## 環境建置
+首先到達想要的資料夾，ex:
+```
+cd Tun-Chuan
+```
+下載PRADA3D的github並進入資料夾:
+```
+git clone https://github.com/ctchuan27/PRADA3D.git
+cd PRADA3D
+```
 建立環境並安裝套件：
 ```bash
 conda env create --file environment.yml
-conda activate gs-avatar
+conda activate PRADA3D
 ```
-接著依照 [3DGS](https://github.com/graphdeco-inria/gaussian-splatting) 的指引，編譯以下模組： `diff-gaussian-rasterization` 與 `simple-knn`。
+接著編譯3DGS必要模組： `diff-gaussian-rasterization` 與 `simple-knn`:
+```
+git clone https://github.com/jkulhanek/fork-diff-gaussian-rasterization.git
+(將fork-diff-gaussian-rasterizatione改名為但指令我不會diff-gaussian-rasterization)
+pip install diff-gaussian-rasterization
+pip install simple-knn
+```
+要注意和原版3DGS不同，這邊使用能分割背景的diff-gaussian-rasterization，使用說明參考:https://github.com/graphdeco-inria/gaussian-splatting/issues/542
 
 ## 下載模型與資料 
 SMPL/SMPL-X 模型：請先註冊並下載 [SMPL](https://smpl.is.tue.mpg.de/) 與 [SMPL-X](https://smpl-x.is.tue.mpg.de/)，並放置於 `assets/smpl_files`。資料夾結構如下：
