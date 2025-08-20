@@ -62,10 +62,11 @@ PRADA3D
 
 ---
 
-## 訓練指令
+## 指令
 
 通用模板（自行修改 -s 與 -m）
 
+### 訓練指令
 ```bash
 python train.py \
     -s <path_to_dataset>/<subject_folder> \
@@ -77,24 +78,41 @@ python train.py \
     --lpips_start_iter 30 \
     --position_lr_init 0.0008
 ```
-
 使用 LHM（NPDD）請加： --lhm
 
+### 渲染指令、evaluation、即時動畫指令
 
+```bash
+python render_novel_pose.py \
+    -s <dataset_path>/<subject_folder> \
+    -m output/<category>/<subject_name>/<exp_name> \
+    --train_stage 1 \
+    --epoch 300 \
+    --smpl_type smpl
+```
 
-## 訓練、渲染、evaluation、即時動畫指令
+### evaluation指令
 ```bash
-python train.py -s <dataset_path>/<subject_folder> -m output/<category>/<subject_name>/<exp_name> --train_stage 1 --epoch 300 --smpl_type smpl --pose_op_start_iter 10 --lpips_start_iter 30 --position_lr_init 0.0008
+python eval.py \
+    -s <dataset_path>/<subject_folder> \
+    -m output/<category>/<subject_name>/<exp_name> \
+    --train_stage 1 \
+    --epoch 300 \
+    --smpl_type smpl
 ```
+
+### 即時動畫指令(live demo)
 ```bash
-python render_novel_pose.py -s <dataset_path>/<subject_folder> -m output/<category>/<subject_name>/<exp_name> --train_stage 1 --epoch 300 --smpl_type smpl
+python realtime_live_demo.py \
+    --source_path <dataset_path>/<subject_folder> \
+    -m output/<category>/<subject_name>/<exp_name> \
+    --train_stage 1 \
+    --epoch 300 \
+    --smpl_type smpl \
+    --webcam_id 3
 ```
-```bash
-python eval.py -s <dataset_path>/<subject_folder> -m output/<category>/<subject_name>/<exp_name> --train_stage 1 --epoch 300 --smpl_type smpl
-```
-```bash
-python realtime_live_demo.py --source_path <dataset_path>/<subject_folder> -m output/<category>/<subject_name>/<exp_name> --train_stage 1 --epoch 300 --smpl_type smpl --webcam_id 3
-```
+根據連接的webcam代碼改變 `--webcam_id`
+
 ## 訓練指令範例
 ### People Snapshot dataset (with LHM / NPDD)
 
@@ -196,7 +214,7 @@ python realtime_live_demo.py --source_path ./custom_dataset/student_4 -m output/
 
 ## 使用自訂影片資料
 
-### 前處理
+### 前處理(未完成待修改)
 使用 [InstantAvatar](https://github.com/tijiang13/InstantAvatar) 提供的腳本產生遮罩與姿勢檔：
 ```bash
 scripts/custom/process-sequence.sh
