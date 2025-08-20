@@ -80,7 +80,7 @@ python train.py \
 ```
 使用 LHM（NPDD）請加： `--lhm`
 
-### 渲染指令、evaluation、即時動畫指令
+### 渲染指令
 
 ```bash
 python render_novel_pose.py \
