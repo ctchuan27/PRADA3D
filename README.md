@@ -19,7 +19,7 @@ cd PRADA3D
 建立環境並安裝套件：
 ```bash
 conda env create --file environment.yml
-conda activate PRADA3D
+conda activate PRADA3D_env
 ```
 
 編譯 3DGS 必要模組：`diff-gaussian-rasterization` 與 `simple-knn`：
