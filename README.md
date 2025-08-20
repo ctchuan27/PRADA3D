@@ -69,8 +69,8 @@ PRADA3D
 ### 訓練指令
 ```bash
 python train.py \
-    -s <path_to_dataset>/<subject_folder> \
-    -m output/<category>/<subject_name>/<exp_name> \
+    -s <path_to_dataset> \
+    -m <path_to_training_result> \
     --train_stage 1 \
     --epoch 300 \
     --smpl_type smpl \
@@ -78,14 +78,14 @@ python train.py \
     --lpips_start_iter 30 \
     --position_lr_init 0.0008
 ```
-使用 LHM（NPDD）請加： --lhm
+使用 LHM（NPDD）請加： `--lhm`
 
 ### 渲染指令、evaluation、即時動畫指令
 
 ```bash
 python render_novel_pose.py \
-    -s <dataset_path>/<subject_folder> \
-    -m output/<category>/<subject_name>/<exp_name> \
+    -s <path_to_dataset> \
+    -m <path_to_training_result> \
     --train_stage 1 \
     --epoch 300 \
     --smpl_type smpl
@@ -94,8 +94,8 @@ python render_novel_pose.py \
 ### evaluation指令
 ```bash
 python eval.py \
-    -s <dataset_path>/<subject_folder> \
-    -m output/<category>/<subject_name>/<exp_name> \
+    -s <path_to_dataset> \
+    -m <path_to_training_result> \
     --train_stage 1 \
     --epoch 300 \
     --smpl_type smpl
@@ -104,8 +104,8 @@ python eval.py \
 ### 即時動畫指令(live demo)
 ```bash
 python realtime_live_demo.py \
-    --source_path <dataset_path>/<subject_folder> \
-    -m output/<category>/<subject_name>/<exp_name> \
+    -s <path_to_dataset> \
+    -m <path_to_training_result> \
     --train_stage 1 \
     --epoch 300 \
     --smpl_type smpl \
