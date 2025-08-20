@@ -96,7 +96,7 @@ python eval.py -s <dataset_path>/<subject_folder> -m output/<category>/<subject_
 python realtime_live_demo.py --source_path <dataset_path>/<subject_folder> -m output/<category>/<subject_name>/<exp_name> --train_stage 1 --epoch 300 --smpl_type smpl --webcam_id 3
 ```
 ## 訓練指令範例
-People Snapshot dataset (with LHM / NPDD)
+### People Snapshot dataset (with LHM / NPDD)
 
 Subject: m3c
 ```bash
@@ -127,7 +127,7 @@ python eval.py -s lhm_dataset/people_snapshot_v2/f4c_processed -m output/lhm/peo
 python realtime_live_demo.py --source_path lhm_dataset/people_snapshot_v2/f4c_processed -m output/lhm/people_snapshot/f4c_v4_0.0008 --train_stage 1 --epoch 300 --lhm --webcam_id 3
 ```
 
-Custom dataset
+### Custom dataset
 
 Subject: 傅老師
 ```bash
