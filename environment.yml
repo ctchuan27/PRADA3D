@@ -1,4 +1,4 @@
-name: PRADA3D
+name: PRADA3D_env
 channels:
   - pytorch
   - nvidia
