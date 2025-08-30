@@ -24,10 +24,16 @@ conda activate PRADA3D_env
 
 編譯 3DGS 必要模組：`diff-gaussian-rasterization` 與 `simple-knn`：
 ```bash
+cd submodules
 git clone https://github.com/jkulhanek/fork-diff-gaussian-rasterization.git
 mv fork-diff-gaussian-rasterization diff-gaussian-rasterization
-pip install diff-gaussian-rasterization
-pip install simple-knn
+cd diff-gaussian-rasterization
+python setup.py install
+cd..
+cd simple-knn
+python setup.py install
+cd..
+cd..
 ```
 
 ⚠️ 注意：這裡使用的是可分割背景的 fork 版本 `diff-gaussian-rasterization`，不同於原版 3DGS。更多說明請參考：  
