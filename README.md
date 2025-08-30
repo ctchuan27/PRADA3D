@@ -26,8 +26,8 @@ conda activate PRADA3D_env
 ```bash
 cd submodules
 git clone https://github.com/jkulhanek/fork-diff-gaussian-rasterization.git
-mv fork-diff-gaussian-rasterization diff-gaussian-rasterization
-cd diff-gaussian-rasterization
+mv fork-diff-gaussian-rasterization diff_gaussian_rasterization
+cd diff_gaussian_rasterization
 python setup.py install
 cd ..
 cd simple-knn
