@@ -12,5 +12,9 @@ dependencies:
   - tqdm
   - tensorboard
   - scipy
+  - pytorch3d
+  - open3d
   - pip:
     - opencv-python
+    - lpips
+    - trimesh
