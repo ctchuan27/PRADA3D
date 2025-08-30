@@ -2,6 +2,7 @@ name: PRADA3D_env
 channels:
   - pytorch
   - nvidia
+  - pytorch3d
 dependencies:
   - python=3.10.13
   - pip=23.3.1
