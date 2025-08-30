@@ -34,6 +34,7 @@ cd simple-knn
 python setup.py install
 cd ..
 cd ..
+pip install numpy==1.23.1
 ```
 
 ⚠️ 注意：這裡使用的是可分割背景的 fork 版本 `diff-gaussian-rasterization`，不同於原版 3DGS。更多說明請參考：  
