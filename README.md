@@ -222,6 +222,7 @@ python realtime_live_demo.py --source_path ./custom_dataset/student_4 -m output/
 ## 使用自訂影片資料
 
 ### 前處理(未完成待修改)
+使用ReFit預測3D pose，用langsam分割mask
 使用 [InstantAvatar](https://github.com/tijiang13/InstantAvatar) 提供的腳本產生遮罩與姿勢檔：
 ```bash
 scripts/custom/process-sequence.sh
