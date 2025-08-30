@@ -18,3 +18,5 @@ dependencies:
     - opencv-python
     - lpips
     - trimesh
+    - kornia
+    - numpy=1.26.4
