@@ -246,7 +246,7 @@ python video_to_frame.py \
 ```bash
 cd ..
 mkdir -p ReFit/custom_dataset/tunchuan/stripe/images
-cp -r PRADA3D/custom_dataset/tunchuan/stripe/images ReFit/custom_dataset/tunchuan/stripe/images
+cp -r PRADA3D/custom_dataset/tunchuan/stripe/images ReFit/custom_dataset/tunchuan/stripe
 ```
 接著預測3D pose，舉例:
 ```bash
