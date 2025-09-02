@@ -293,7 +293,7 @@ PRADA3D/custom_dataset/tunchuan/stripe
 ```bash
 conda deactivate
 conda activate PRADA3D
-python data_preparation.py \
+python scripts/data_preparation.py \
   --data_path ./custom_dataset/tunchuan/stripe \
 ```
 
