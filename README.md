@@ -240,11 +240,12 @@ python video_to_frame.py \
   --downscale 0.5 \
   --rotation 90
 ```
-使用ReFit預測3D pose，如壞掉要安裝參考:https://github.com/yufu-wang/ReFit
+使用ReFit預測3D pose，如壞掉要安裝參考:https://github.com/yufu-wang/ReFit \
 將照片複製到ReFit資料夾
 舉例:
 ```bash
 cd ..
+mkdir -p ReFit/custom_dataset/tunchuan/stripe/images
 cp -r PRADA3D/custom_dataset/tunchuan/stripe/images ReFit/custom_dataset/tunchuan/stripe/images
 ```
 ```bash
