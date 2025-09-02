@@ -253,7 +253,7 @@ cp -r PRADA3D/custom_dataset/tunchuan/stripe/images ReFit/custom_dataset/tunchua
 conda deactivate
 conda activate refit
 cd ReFit
-python scripts/process_folder.py --imagedir ReFit/custom_dataset/tunchuan/stripe
+python scripts/process_folder.py --imagedir ReFit/custom_dataset/tunchuan/stripe --viz_results
 ```
 ，用langsam分割mask
 使用 [InstantAvatar](https://github.com/tijiang13/InstantAvatar) 提供的腳本產生遮罩與姿勢檔：
