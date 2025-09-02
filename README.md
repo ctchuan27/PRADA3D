@@ -251,7 +251,7 @@ cp -r PRADA3D/custom_dataset/tunchuan/stripe/images ReFit/custom_dataset/tunchua
 接著預測3D pose，舉例:
 ```bash
 conda deactivate
-conda activate ReFit
+conda activate refit
 cd ReFit
 python scripts/process_folder.py --imagedir ReFit/custom_dataset/tunchuan/stripe
 ```
