@@ -255,20 +255,35 @@ conda activate refit
 cd ReFit
 python scripts/process_folder.py --imagedir custom_dataset/tunchuan/stripe --viz_results
 ```
-，用langsam分割mask
-使用 [InstantAvatar](https://github.com/tijiang13/InstantAvatar) 提供的腳本產生遮罩與姿勢檔：
-```bash
-scripts/custom/process-sequence.sh
-```
 
 資料夾結構應如下：
 ```
-custom_data
+ReFit/custom_dataset/tunchuan/stripe
  ├── images
- ├── masks
  ├── cameras.npz
  └── poses_optimized.npz
 ```
+
+複製回PRADA3D資料夾:
+```bash
+cd ..
+cp -r ReFit/custom_dataset/tunchuan/stripe PRADA3D/custom_dataset/tunchuan
+conda deactivate
+```
+
+用langsam分割mask，如壞掉安裝參考: https://github.com/luca-medeiros/lang-segment-anything
+```bash
+cd PRADA3D
+conda activate invsr
+```
+
+使用 [InstantAvatar](https://github.com/tijiang13/InstantAvatar) 提供的腳本產生遮罩與姿勢檔：
+```bash
+
+scripts/custom/process-sequence.sh
+```
+
+
 
 轉換 ROMP 姿勢格式（需修改第 50、51 行路徑）：
 ```bash
