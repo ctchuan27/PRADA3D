@@ -275,6 +275,9 @@ conda deactivate
 ```bash
 cd PRADA3D
 conda activate invsr
+python mask_seg.py \
+  --image_dir ./custom_dataset/tunchuan/stripe/images \
+  --mask_dir ./custom_dataset/tunchuan/stripe/masks \
 ```
 
 使用 [InstantAvatar](https://github.com/tijiang13/InstantAvatar) 提供的腳本產生遮罩與姿勢檔：
