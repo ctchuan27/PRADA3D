@@ -274,7 +274,7 @@ conda deactivate
 用langsam分割mask，如壞掉安裝參考: https://github.com/luca-medeiros/lang-segment-anything
 ```bash
 cd PRADA3D
-conda activate invsr
+conda activate langsam
 python mask_seg.py \
   --image_dir ./custom_dataset/tunchuan/stripe/images \
   --mask_dir ./custom_dataset/tunchuan/stripe/masks \
