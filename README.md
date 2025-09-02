@@ -222,7 +222,29 @@ python realtime_live_demo.py --source_path ./custom_dataset/student_4 -m output/
 ## 使用自訂影片資料
 
 ### 前處理(未完成待修改)
-使用ReFit預測3D pose，用langsam分割mask
+首先將影片分割:
+```bash
+python video_to_frame.py \
+  --video_file <影片位置> \
+  --output_dir <output image folder> \
+  --downsample <frame取樣> \
+  --downscale <image大小調整> \
+  --rotation <image旋轉>
+```
+舉例:
+```bash
+python video_to_frame.py \
+  --video_file ./custom_dataset/tunchuan/stripe/sam.MOV \
+  --output_dir ./custom_dataset/tunchuan/stripe/images \
+  --downsample 2 \
+  --downscale 0.5 \
+  --rotation 90
+```
+使用ReFit預測3D pose，如要安裝參考:https://github.com/yufu-wang/ReFit
+```bash
+scripts/custom/process-sequence.sh
+```
+，用langsam分割mask
 使用 [InstantAvatar](https://github.com/tijiang13/InstantAvatar) 提供的腳本產生遮罩與姿勢檔：
 ```bash
 scripts/custom/process-sequence.sh
