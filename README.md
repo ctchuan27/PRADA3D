@@ -227,9 +227,9 @@ python realtime_live_demo.py --source_path ./custom_dataset/student_4 -m output/
 python video_to_frame.py \
   --video_file <影片位置> \
   --output_dir <output image folder> \
-  --downsample <frame取樣> \
-  --downscale <image大小調整> \
-  --rotation <image旋轉>
+  --downsample <frame取樣> default=2, help="Frame downsample rate (keep 1 every N frames)" \
+  --downscale <image大小調整> default=1.0, help="Resolution downscale factor (e.g. 0.5 for half size)" \
+  --rotation <image旋轉> choices=[0, 90, 180, 270], default=0, help="Rotation angle: 0=none, 90=clockwise, 180=flip, 270=counter-clockwise"
 ```
 舉例:
 ```bash
