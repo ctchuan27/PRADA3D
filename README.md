@@ -252,6 +252,7 @@ cp -r PRADA3D/custom_dataset/tunchuan/stripe/images ReFit/custom_dataset/tunchua
 ```bash
 conda deactivate
 conda activate ReFit
+cd ReFit
 python scripts/process_folder.py --imagedir ReFit/custom_dataset/tunchuan/stripe
 ```
 ，用langsam分割mask
