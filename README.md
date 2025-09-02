@@ -280,6 +280,23 @@ python mask_seg.py \
   --mask_dir ./custom_dataset/tunchuan/stripe/masks \
 ```
 
+接著資料夾結構應如下：
+```
+PRADA3D/custom_dataset/tunchuan/stripe
+ ├── images
+ ├── masks
+ ├── cameras.npz
+ └── poses_optimized.npz
+```
+
+接著轉換到訓練需要格式:
+```bash
+conda deactivate
+conda activate PRADA3D
+python data_preparation.py \
+  --data_path ./custom_dataset/tunchuan/stripe \
+```
+
 使用 [InstantAvatar](https://github.com/tijiang13/InstantAvatar) 提供的腳本產生遮罩與姿勢檔：
 ```bash
 
