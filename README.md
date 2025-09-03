@@ -110,6 +110,15 @@ python render_novel_pose.py \
     --background <path_to_background> (ex. demo/rotation/stage.png) 不填的話預設白背景\
     --test_folder <path_to_test_pose> (ex. demo/live)
 ```
+若要更改背景， \
+請更改第33行 `background = cv2.imread('./demo/rotation/stage.png')` 的路徑 \
+並將第39行 `background = None` 註解掉 \
+
+若要更改pose， \
+請更改第46行 `model.test_folder=os.getcwd() + '/demo/live'` 的路徑 \
+
+若要更改結果儲存位置， \
+請更改第57行 `render_path = '/home/enjhih/Tun-Chuan/GaussianAvatar/output/test_train'` 的路徑 \
 
 ### evaluation指令
 ```bash
