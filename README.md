@@ -353,22 +353,5 @@ python scripts/npz_to_pth.py \
   --pose_npz poses_optimized.npz
 ```
 
-使用 [InstantAvatar](https://github.com/tijiang13/InstantAvatar) 提供的腳本產生遮罩與姿勢檔：
-```bash
-
-scripts/custom/process-sequence.sh
-```
-
-
-
-轉換 ROMP 姿勢格式（需修改第 50、51 行路徑）：
-```bash
-cd scripts & python sample_romp2gsavatar.py
-```
-
-生成標準姿勢的 position map（需修改對應路徑）：
-```bash
-python gen_pose_map_cano_smpl.py
-```
 
 
