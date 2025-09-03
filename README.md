@@ -107,6 +107,8 @@ python render_novel_pose.py \
     --train_stage 1 \
     --epoch 300 \
     --smpl_type smpl
+    --background <path_to_background> (ex. demo/rotation/stage.png) 不填的話預設白背景\
+    --test_folder <path_to_test_pose> (ex. demo/live)
 ```
 
 ### evaluation指令
