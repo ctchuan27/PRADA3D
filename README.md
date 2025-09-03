@@ -71,12 +71,12 @@ PRADA3D
 
 ## Dataset
 ### public:
-原檔影片、處理好的dataset: 在`Tun-Chuan/PRADA3D/default_dataset`中
+原檔影片、處理好的dataset: 在 `Tun-Chuan/PRADA3D/default_dataset` 中 \
 原檔網址: https://graphics.tu-bs.de/people-snapshot
 
 ### private:
-原檔影片: 在`Tun-Chuan/acl_data_raw`以及`Tun-Chuan/acl_data_cut`中
-處理好的dataset: 在`Tun-Chuan/PRADA3D/custom_dataset`中
+原檔影片: 在 `Tun-Chuan/acl_data_raw` 以及 `Tun-Chuan/acl_data_cut` 中 \
+處理好的dataset: 在 `Tun-Chuan/PRADA3D/custom_dataset` 中
 
 
 ## 指令
