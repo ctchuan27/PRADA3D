@@ -325,7 +325,7 @@ PRADA3D/custom_dataset/tunchuan/stripe
 
 若要單純將Pose轉乘pth，即給render_novel_pose用:
 ```bash
-python npz_to_pth.py \
+python scripts/npz_to_pth.py \
   --data_path custom_dataset/tunchuan/stripe \
   --cam_npz cameras.npz \
   --pose_npz poses_optimized.npz
