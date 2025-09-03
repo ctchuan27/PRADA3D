@@ -297,6 +297,34 @@ python scripts/data_preparation.py \
   --data_path ./custom_dataset/tunchuan/stripe \
 ```
 
+接著資料夾結構應如下：
+```
+PRADA3D/custom_dataset/tunchuan/stripe
+ ├── images
+ ├── masks
+ ├── train
+     ├── images
+     ├── masks
+     ├── cam_parms.npz
+     ├── cano_smpl.obj
+     ├── query_posemap_512_cano_smpl.npz
+     ├── smpl_cano_joint_mat.pth
+     └── smpl_parms.pth
+ ├── test
+     ├── images
+     ├── masks
+     ├── cam_parms.npz
+     ├── cano_smpl.obj
+     ├── query_posemap_512_cano_smpl.npz
+     ├── smpl_cano_joint_mat.pth
+     └── smpl_parms.pth
+ ├── cameras.npz
+ └── poses_optimized.npz
+```
+
+
+
+
 使用 [InstantAvatar](https://github.com/tijiang13/InstantAvatar) 提供的腳本產生遮罩與姿勢檔：
 ```bash
 
